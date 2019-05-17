@@ -255,7 +255,11 @@ def create_graph_pdf(dot_file, pdf_file, git_root):
 
 
 def view(pdf_file, pdf_viewer):
-    captured_run(*f"{pdf_viewer} {str(pdf_file)}".split())
+    subprocess.Popen(
+        f"{pdf_viewer} {str(pdf_file)}".split(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def evince(pdf_file):
