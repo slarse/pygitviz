@@ -5,7 +5,7 @@ import sys
 import collections
 from pathlib import Path
 
-from pygitviz import pygitviz
+from _pygitviz import graphviz
 
 
 OS = collections.namedtuple("OS", "name open_pdf_cmd shell_setting".split())
@@ -51,18 +51,18 @@ def main():
     dot_name = "graph.dot"
     git_root = Path(".git")
     with tempfile.TemporaryDirectory() as tmpdir:
-        state_cache = pygitviz.git_state(git_root)
+        state_cache = graphviz.git_state(git_root)
         dot_file = Path(str(tmpdir)) / dot_name
         pdf_file = Path(str(tmpdir)) / pdf_name
-        pygitviz.create_graph_pdf(dot_file, pdf_file, git_root)
-        pygitviz.view(pdf_file, args.pdf_viewer, operating_system.shell_setting)
+        graphviz.create_graph_pdf(dot_file, pdf_file, git_root)
+        graphviz.view(pdf_file, args.pdf_viewer, operating_system.shell_setting)
 
         while True:
             time.sleep(1)
-            state_out = pygitviz.git_state(git_root)
+            state_out = graphviz.git_state(git_root)
             if state_cache != state_out:
                 state_cache = state_out
-                pygitviz.create_graph_pdf(dot_file, pdf_file, git_root)
+                graphviz.create_graph_pdf(dot_file, pdf_file, git_root)
 
 
 if __name__ == "__main__":

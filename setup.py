@@ -1,11 +1,12 @@
 import re
+import pathlib
 from setuptools import setup, find_packages
 
 with open("README.md", mode="r", encoding="utf-8") as f:
     readme = f.read()
 
 # parse the version instead of importing it to avoid dependency-related crashes
-with open("pygitviz/__version.py", mode="r", encoding="utf-8") as f:
+with open(pathlib.Path("src")/"_pygitviz"/"__version.py", mode="r", encoding="utf-8") as f:
     line = f.readline()
     __version__ = line.split("=")[1].strip(" '\"\n")
     assert re.match(r"^\d+(\.\d+){2}$", __version__)
@@ -26,6 +27,7 @@ setup(
         "https://github.com/slarse/pygitviz/archive/v{}.tar.gz".format(__version__)
     ),
     license="MIT",
+    package_dir={"": "src"},
     packages=find_packages(exclude=("tests", "docs")),
     tests_require=test_requirements,
     install_requires=required,
