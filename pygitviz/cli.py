@@ -2,13 +2,19 @@ import time
 import tempfile
 import argparse
 import sys
+import collections
 from pathlib import Path
 
 from pygitviz import pygitviz
 
 
-def create_parser():
-    default_open_command = os_default_open(sys.platform)
+OS = collections.namedtuple("OS", "name open_pdf_cmd shell_setting".split())
+Linux = OS(name="Linux", open_pdf_cmd="xdg-open", shell_setting=False)
+MacOS = OS(name="macOS", open_pdf_cmd="open", shell_setting=False)
+Windows = OS(name="Windows", open_pdf_cmd="start", shell_setting=True)
+
+
+def create_parser(operating_system: OS):
     parser = argparse.ArgumentParser(
         prog="PyGitViz",
         description="Git repository visualizer for education and demonstration purposes",
@@ -18,30 +24,27 @@ def create_parser():
         "--pdf-viewer",
         help=(
             "Program to open the resulting PDF file with. Defaults to "
-            f"'{default_open_command}'."
+            f"'{operating_system.open_pdf_cmd}'."
         ),
-        default=default_open_command,
+        default=operating_system.open_pdf_cmd,
     )
     return parser
 
 
-def os_default_open(platform):
-    """Identify the OS and return the default command to open files with."""
+def get_os(platform: str) -> OS:
+    """Return defaults for the current OS."""
     if platform.startswith("linux"):
-        open_command = "xdg-open"
-    elif platform.startswith("darwin"):
-        open_command = "open"
-    elif platform.startswith("win"):
-        open_command = "start"
-    else:
-        raise ValueError(
-            "unidentified operating system, please specify PDF viewer explicitly"
-        )
-    return open_command
+        return Linux
+    if platform.startswith("darwin"):
+        return MacOS
+    if platform.startswith("win"):
+        return Windows
+    raise ValueError(f"unidentified operating system {platform}")
 
 
 def main():
-    parser = create_parser()
+    operating_system = get_os(sys.platform)
+    parser = create_parser(operating_system)
     args = parser.parse_args(sys.argv[1:])
 
     pdf_name = "graph.pdf"
@@ -52,7 +55,7 @@ def main():
         dot_file = Path(str(tmpdir)) / dot_name
         pdf_file = Path(str(tmpdir)) / pdf_name
         pygitviz.create_graph_pdf(dot_file, pdf_file, git_root)
-        pygitviz.view(pdf_file, args.pdf_viewer)
+        pygitviz.view(pdf_file, args.pdf_viewer, operating_system.shell_setting)
 
         while True:
             time.sleep(1)
