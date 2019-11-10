@@ -254,11 +254,12 @@ def create_graph_pdf(dot_file, pdf_file, git_root):
     compile_pdf(dot_file, pdf_file, graphviz)
 
 
-def view(pdf_file, pdf_viewer):
+def view(pdf_file, pdf_viewer, shell):
     subprocess.Popen(
         f"{pdf_viewer} {str(pdf_file)}".split(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        shell=shell,
     )
 
 
