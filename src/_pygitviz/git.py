@@ -5,60 +5,12 @@ from typing import List
 from collections import namedtuple
 
 from _pygitviz import util
+from _pygitviz import gitobject
 
 Ref = namedtuple("Ref", "name value".split())
 
-class GitObject:
-    """Class representing an arbitrary Git object."""
 
-    class _Child(namedtuple("_Child", "name obj".split())):
-        def __getattr__(self, key):
-            return self.__dict__.get(key, getattr(self.obj, key))
-
-    def __init__(self, sha, type_, children=None, parents=None):
-        self.sha = sha
-        self.type_ = type_
-        self._children = children or []
-        self._parents = parents or []
-
-    @property
-    def short_sha(self):
-        return short_sha(self.sha)
-
-    @property
-    def children(self):
-        return list(self._children)
-
-    @property
-    def parents(self):
-        return list(self._parents)
-
-    def add_child(self, name, obj):
-        self._children.append(self._Child(name, obj))
-
-    def add_parent(self, obj):
-        self._parents.append(obj)
-
-    def __repr__(self):
-        children_str = f", children={self.children}" if self.children else ""
-        parent_str = f", parents={self.parents}" if self._parents else ""
-        return f"{self.type_}(sha={self.short_sha}{parent_str}{children_str})"
-
-    def __str__(self):
-        return fr"{self.type_}\n{self.short_sha}"
-
-    def __hash__(self):
-        return int(self.sha, base=16)
-
-
-
-
-def short_sha(sha: str) -> str:
-    """Return an abbreviated version of the provided string."""
-    return sha[:7]
-
-
-def collect_objects(git_root: pathlib.Path) -> List[GitObject]:
+def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     """Return all Git objects in the .git/objects directory, or an empty list
     if the directory does not exist.
     """
@@ -68,7 +20,7 @@ def collect_objects(git_root: pathlib.Path) -> List[GitObject]:
     object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
     object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
     git_objects = {
-        sha: GitObject(sha=sha, type_=cat_file(sha, "-t"), children=set())
+        sha: gitobject.GitObject(sha=sha, type_=cat_file(sha, "-t"))
         for sha in object_shas
     }
     for obj in git_objects.values():
@@ -88,7 +40,7 @@ def collect_refs(git_root):
     refs = []
     if ref_heads.exists():
         refs += [
-            Ref(f.name, short_sha(f.read_text(encoding=util.ENCODING).strip()))
+            Ref(f.name, util.short_sha(f.read_text(encoding=util.ENCODING).strip()))
             for f in ref_heads.iterdir()
         ]
 
@@ -97,7 +49,7 @@ def collect_refs(git_root):
         symb_value = (
             symb_contents[-1].split("/")[-1]
             if len(symb_contents) > 1
-            else short_sha(symb_contents[-1])
+            else util.short_sha(symb_contents[-1])
         )
         refs.append(Ref("HEAD", symb_value))
 

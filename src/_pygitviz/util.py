@@ -12,6 +12,11 @@ MacOS = OS(name="macOS", open_pdf_cmd="open", shell_setting=False)
 Windows = OS(name="Windows", open_pdf_cmd="start", shell_setting=True)
 
 
+def short_sha(sha: str) -> str:
+    """Return an abbreviated version of the provided SHA1 hexstring."""
+    return sha[:7]
+
+
 def get_os(platform: str = sys.platform) -> OS:
     """Return defaults for the current OS."""
     if platform.startswith("linux"):

@@ -3,6 +3,7 @@ from itertools import groupby
 from typing import List
 
 from _pygitviz import git
+from _pygitviz import gitobject
 
 _COLOR = {"blob": "azure", "tree": "darkolivegreen1", "commit": "darkslategray1"}
 _SHAPES = {"blob": "egg", "tree": "folder", "commit": "rect"}
@@ -10,7 +11,7 @@ _ORDER = {"blob": 0, "tree": 1, "commit": 2}
 EMPTY = r"digraph G {}"
 
 
-def to_graphviz(git_objects: List[git.GitObject], refs: List[git.Ref]) -> str:
+def to_graphviz(git_objects: List[gitobject.GitObject], refs: List[git.Ref]) -> str:
     """Return a string with graphviz representing the provided Git objects and
     refs.
     """
@@ -42,7 +43,7 @@ rankdir=LR;
 }}"""
 
 
-def _to_cluster(git_objects: List[git.GitObject], label: str) -> str:
+def _to_cluster(git_objects: List[gitobject.GitObject], label: str) -> str:
     """Return a string with a graphviz cluster of the provided git objects."""
     content = "\n".join([_gitobj_to_graphviz(obj) for obj in git_objects])
     return f"""subgraph cluster_{label} {{
@@ -54,7 +55,7 @@ bgcolor=beige;
 """
 
 
-def _gitobj_to_graphviz(git_object: git.GitObject) -> str:
+def _gitobj_to_graphviz(git_object: gitobject.GitObject) -> str:
     return _to_graphviz_node(git_object) + "\n" + _to_graphviz_edges(git_object)
 
 
@@ -62,7 +63,7 @@ def _ref_to_graphviz(ref: git.Ref) -> str:
     return "\n".join([f'"{ref.name}" [shape=rect];', f'"{ref.name}" -> "{ref.value}";'])
 
 
-def _to_graphviz_node(git_object: git.GitObject) -> str:
+def _to_graphviz_node(git_object: gitobject.GitObject) -> str:
     color = _COLOR[git_object.type_]
     shape = _SHAPES[git_object.type_]
     return (
@@ -71,7 +72,7 @@ def _to_graphviz_node(git_object: git.GitObject) -> str:
     )
 
 
-def _to_graphviz_edges(git_object: git.GitObject) -> str:
+def _to_graphviz_edges(git_object: gitobject.GitObject) -> str:
     output = ""
     if git_object.children:
         for child in git_object.children:
