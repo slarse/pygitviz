@@ -16,9 +16,18 @@ _ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2}
 EMPTY = r"digraph G {}"
 
 
-def to_graphviz(git_objects: List[gitobject.GitObject], refs: List[git.Ref]) -> str:
+def to_graphviz(
+    git_objects: List[gitobject.GitObject],
+    refs: List[git.Ref],
+    hide_content: bool,
+) -> str:
     """Return a string with graphviz representing the provided Git objects and
     refs.
+
+    Args:
+        git_objects: A list of GitObjects to turn into a Graphviz Digraph.
+        refs: A list of Git refs.
+        hide_content: If True, trees and blobs are not added to the Digraph.
     """
     if not git_objects:
         return EMPTY
@@ -32,11 +41,13 @@ def to_graphviz(git_objects: List[gitobject.GitObject], refs: List[git.Ref]) -> 
     }
 
     output = ""
-    if Type.TREE in groups or Type.BLOB in groups:
+    if not hide_content and (Type.TREE in groups or Type.BLOB in groups):
         content_objs = groups.get(Type.TREE, []) + groups.get(Type.BLOB, [])
         output += _to_cluster(content_objs, "Content")
     if Type.COMMIT in groups:
-        output += _to_cluster(groups[Type.COMMIT], "Commits")
+        output += _to_cluster(
+            groups[Type.COMMIT], "Commits", show_children=not hide_content
+        )
     if refs:
         output += "\n".join([_ref_to_graphviz(ref) for ref in refs])
 
@@ -49,9 +60,16 @@ rankdir=LR;
 }}"""
 
 
-def _to_cluster(git_objects: List[gitobject.GitObject], label: str) -> str:
+def _to_cluster(
+    git_objects: List[gitobject.GitObject],
+    label: str,
+    show_children: bool = True,
+    show_parents: bool = True,
+) -> str:
     """Return a string with a graphviz cluster of the provided git objects."""
-    content = "\n".join([_gitobj_to_graphviz(obj) for obj in git_objects])
+    content = "\n".join(
+        [_gitobj_to_graphviz(obj, show_children, show_parents) for obj in git_objects]
+    )
     return f"""subgraph cluster_{label} {{
 label="{label}";
 style="rounded";
@@ -61,8 +79,14 @@ bgcolor=beige;
 """
 
 
-def _gitobj_to_graphviz(git_object: gitobject.GitObject) -> str:
-    return _to_graphviz_node(git_object) + "\n" + _to_graphviz_edges(git_object)
+def _gitobj_to_graphviz(
+    git_object: gitobject.GitObject, show_children: bool, show_parents: bool
+) -> str:
+    return (
+        _to_graphviz_node(git_object)
+        + "\n"
+        + _to_graphviz_edges(git_object, show_children, show_parents)
+    )
 
 
 def _ref_to_graphviz(ref: git.Ref) -> str:
@@ -78,12 +102,14 @@ def _to_graphviz_node(git_object: gitobject.GitObject) -> str:
     )
 
 
-def _to_graphviz_edges(git_object: gitobject.GitObject) -> str:
+def _to_graphviz_edges(
+    git_object: gitobject.GitObject, show_children: bool, show_parents: bool
+) -> str:
     output = ""
-    if git_object.children:
+    if git_object.children and show_children:
         for child in git_object.children:
             output += f'"{git_object.short_sha}" -> "{child.short_sha}" [label="{child.name}"];\n'
-    if git_object.parents:
+    if git_object.parents and show_parents:
         for parent in git_object.parents:
             output += f'"{parent.short_sha}" -> "{git_object.short_sha}" [dir=back];\n'
     return output.strip()

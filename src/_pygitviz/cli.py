@@ -22,13 +22,28 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         dot_file = Path(str(tmpdir)) / dot_name
         pdf_file = Path(str(tmpdir)) / pdf_name
-        _mainloop(git_root, dot_file, pdf_file, args.pdf_viewer, operating_system)
+        _mainloop(
+            git_root,
+            dot_file,
+            pdf_file,
+            args.pdf_viewer,
+            operating_system,
+            args.hide_content,
+        )
 
 
 def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="PyGitViz",
         description="Git repository visualizer for education and demonstration purposes",
+    )
+    parser.add_argument(
+        "--hide-content",
+        help=(
+            "Hide trees and blobs from the representation, so only commits and "
+            "refs are shown."
+        ),
+        action="store_true",
     )
     parser.add_argument(
         "-p",
@@ -42,10 +57,12 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     return parser
 
 
-def _create_graph_pdf(dot_file: Path, pdf_file: Path, git_root: Path) -> None:
+def _create_graph_pdf(
+    dot_file: Path, pdf_file: Path, git_root: Path, hide_content: bool
+) -> None:
     git_objs = git.collect_objects(git_root)
     refs = git.collect_refs(git_root)
-    graph = graphviz.to_graphviz(git_objs, refs)
+    graph = graphviz.to_graphviz(git_objs, refs, hide_content)
     util.compile_pdf(dot_file, pdf_file, graph)
 
 
@@ -55,12 +72,13 @@ def _mainloop(
     pdf_file: Path,
     pdf_viewer: str,
     operating_system: util.OS,
+    hide_content: bool,
 ) -> None:
     """Create and open a PDF file that is continually refreshed as changes
     occurr in the Git repo.
     """
     state_cache = git.state(git_root)
-    _create_graph_pdf(dot_file, pdf_file, git_root)
+    _create_graph_pdf(dot_file, pdf_file, git_root, hide_content)
     util.view(pdf_file, pdf_viewer, operating_system.shell_setting)
 
     while True:
@@ -68,4 +86,4 @@ def _mainloop(
         state_out = git.state(git_root)
         if state_cache != state_out:
             state_cache = state_out
-            _create_graph_pdf(dot_file, pdf_file, git_root)
+            _create_graph_pdf(dot_file, pdf_file, git_root, hide_content)

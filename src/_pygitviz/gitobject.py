@@ -1,7 +1,7 @@
 """A class that represents a Git object."""
 import enum
 from collections import namedtuple
-from typing import List
+from typing import List, Optional
 
 from _pygitviz import util
 
@@ -24,17 +24,20 @@ class Type(enum.Enum):
 class GitObject:
     """Class representing Git object."""
 
-    def __init__(self, sha: str, obj_type: Type):
+    def __init__(
+        self, sha: str, obj_type: Type, parents: Optional[List["GitObject"]] = None
+    ):
         """
         Args:
             sha: The sha1 hexstring of this GitObject.
             obj_type: The type of this GitObject.
+            parents: An optional list of parent objects.
         """
 
         self.sha = sha
         self._type = obj_type
         self._children = []
-        self._parents = []
+        self._parents = parents or []
 
     @property
     def short_sha(self) -> str:
