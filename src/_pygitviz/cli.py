@@ -1,20 +1,31 @@
+"""The command line interface for PyGitViz."""
 import time
 import tempfile
 import argparse
 import sys
-import collections
 from pathlib import Path
 
 from _pygitviz import graphviz
+from _pygitviz import util
+from _pygitviz import git
 
 
-OS = collections.namedtuple("OS", "name open_pdf_cmd shell_setting".split())
-Linux = OS(name="Linux", open_pdf_cmd="xdg-open", shell_setting=False)
-MacOS = OS(name="macOS", open_pdf_cmd="open", shell_setting=False)
-Windows = OS(name="Windows", open_pdf_cmd="start", shell_setting=True)
+def main() -> None:
+    """Run the PyGitViz program."""
+    operating_system = util.get_os()
+    parser = _create_parser(operating_system)
+    args = parser.parse_args(sys.argv[1:])
+
+    pdf_name = "graph.pdf"
+    dot_name = "graph.dot"
+    git_root = Path(".git")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dot_file = Path(str(tmpdir)) / dot_name
+        pdf_file = Path(str(tmpdir)) / pdf_name
+        _mainloop(git_root, dot_file, pdf_file, args.pdf_viewer, operating_system)
 
 
-def create_parser(operating_system: OS):
+def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="PyGitViz",
         description="Git repository visualizer for education and demonstration purposes",
@@ -31,39 +42,30 @@ def create_parser(operating_system: OS):
     return parser
 
 
-def get_os(platform: str) -> OS:
-    """Return defaults for the current OS."""
-    if platform.startswith("linux"):
-        return Linux
-    if platform.startswith("darwin"):
-        return MacOS
-    if platform.startswith("win"):
-        return Windows
-    raise ValueError(f"unidentified operating system {platform}")
+def _create_graph_pdf(dot_file: Path, pdf_file: Path, git_root: Path) -> None:
+    git_objs = git.collect_objects(git_root)
+    refs = git.collect_refs(git_root)
+    graph = graphviz.to_graphviz(git_objs, refs)
+    util.compile_pdf(dot_file, pdf_file, graph)
 
 
-def main():
-    operating_system = get_os(sys.platform)
-    parser = create_parser(operating_system)
-    args = parser.parse_args(sys.argv[1:])
+def _mainloop(
+    git_root: Path,
+    dot_file: Path,
+    pdf_file: Path,
+    pdf_viewer: str,
+    operating_system: util.OS,
+) -> None:
+    """Create and open a PDF file that is continually refreshed as changes
+    occurr in the Git repo.
+    """
+    state_cache = git.state(git_root)
+    _create_graph_pdf(dot_file, pdf_file, git_root)
+    util.view(pdf_file, pdf_viewer, operating_system.shell_setting)
 
-    pdf_name = "graph.pdf"
-    dot_name = "graph.dot"
-    git_root = Path(".git")
-    with tempfile.TemporaryDirectory() as tmpdir:
-        state_cache = graphviz.git_state(git_root)
-        dot_file = Path(str(tmpdir)) / dot_name
-        pdf_file = Path(str(tmpdir)) / pdf_name
-        graphviz.create_graph_pdf(dot_file, pdf_file, git_root)
-        graphviz.view(pdf_file, args.pdf_viewer, operating_system.shell_setting)
-
-        while True:
-            time.sleep(1)
-            state_out = graphviz.git_state(git_root)
-            if state_cache != state_out:
-                state_cache = state_out
-                graphviz.create_graph_pdf(dot_file, pdf_file, git_root)
-
-
-if __name__ == "__main__":
-    main()
+    while True:
+        time.sleep(1)
+        state_out = git.state(git_root)
+        if state_cache != state_out:
+            state_cache = state_out
+            _create_graph_pdf(dot_file, pdf_file, git_root)
