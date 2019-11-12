@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from _pygitviz import util
 from _pygitviz import gitobject
+from _pygitviz.gitobject import Type
 
 Ref = namedtuple("Ref", "name value".split())
 
@@ -20,13 +21,13 @@ def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
     object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
     git_objects = {
-        sha: gitobject.GitObject(sha=sha, type_=cat_file(sha, "-t"))
+        sha: gitobject.GitObject(sha=sha, obj_type=Type(cat_file(sha, "-t")))
         for sha in object_shas
     }
     for obj in git_objects.values():
-        if obj.type_ == "tree":
+        if obj.obj_type == Type.TREE:
             _add_children(obj, git_objects)
-        elif obj.type_ == "commit":
+        elif obj.obj_type == Type.COMMIT:
             _add_parents_and_tree(obj, git_objects)
     return git_objects.values()
 

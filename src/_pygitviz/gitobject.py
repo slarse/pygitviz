@@ -1,4 +1,5 @@
 """A class that represents a Git object."""
+import enum
 from collections import namedtuple
 from typing import List
 
@@ -12,18 +13,26 @@ class Child(namedtuple("_Child", "name obj".split())):
         return self.__dict__.get(key, getattr(self.obj, key))
 
 
+class Type(enum.Enum):
+    """The type of a GitObject."""
+
+    BLOB = "blob"
+    TREE = "tree"
+    COMMIT = "commit"
+
+
 class GitObject:
     """Class representing Git object."""
 
-    def __init__(self, sha: str, type_: str):
+    def __init__(self, sha: str, obj_type: Type):
         """
         Args:
             sha: The sha1 hexstring of this GitObject.
-            type_: The type of this GitObject.
+            obj_type: The type of this GitObject.
         """
 
         self.sha = sha
-        self.type_ = type_
+        self._type = obj_type
         self._children = []
         self._parents = []
 
@@ -31,6 +40,11 @@ class GitObject:
     def short_sha(self) -> str:
         """Return an abbreviated form of this GitObject's sha1 hexstring."""
         return util.short_sha(self.sha)
+
+    @property
+    def obj_type(self) -> Type:
+        """Return the type of this object."""
+        return self._type
 
     @property
     def children(self) -> List[Child]:
@@ -55,10 +69,10 @@ class GitObject:
     def __repr__(self) -> str:
         children_str = f", children={self.children}" if self.children else ""
         parent_str = f", parents={self.parents}" if self._parents else ""
-        return f"{self.type_}(sha={self.short_sha}{parent_str}{children_str})"
+        return f"{self.obj_type.value}(sha={self.short_sha}{parent_str}{children_str})"
 
     def __str__(self) -> str:
-        return fr"{self.type_}\n{self.short_sha}"
+        return fr"{self.obj_type.value}\n{self.short_sha}"
 
     def __hash__(self) -> int:
         return int(self.sha, base=16)

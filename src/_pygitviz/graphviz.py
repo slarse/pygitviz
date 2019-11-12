@@ -4,10 +4,15 @@ from typing import List
 
 from _pygitviz import git
 from _pygitviz import gitobject
+from _pygitviz.gitobject import Type
 
-_COLOR = {"blob": "azure", "tree": "darkolivegreen1", "commit": "darkslategray1"}
-_SHAPES = {"blob": "egg", "tree": "folder", "commit": "rect"}
-_ORDER = {"blob": 0, "tree": 1, "commit": 2}
+_COLOR = {
+    Type.BLOB: "azure",
+    Type.TREE: "darkolivegreen1",
+    Type.COMMIT: "darkslategray1",
+}
+_SHAPES = {Type.BLOB: "egg", Type.TREE: "folder", Type.COMMIT: "rect"}
+_ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2}
 EMPTY = r"digraph G {}"
 
 
@@ -21,16 +26,17 @@ def to_graphviz(git_objects: List[gitobject.GitObject], refs: List[git.Ref]) -> 
     groups = {
         key: list(group)
         for key, group in groupby(
-            sorted(git_objects, key=lambda o: _ORDER[o.type_]), key=lambda o: o.type_
+            sorted(git_objects, key=lambda o: _ORDER[o.obj_type]),
+            key=lambda o: o.obj_type,
         )
     }
 
     output = ""
-    if "tree" in groups or "blob" in groups:
-        content_objs = groups.get("tree", []) + groups.get("blob", [])
+    if Type.TREE in groups or Type.BLOB in groups:
+        content_objs = groups.get(Type.TREE, []) + groups.get(Type.BLOB, [])
         output += _to_cluster(content_objs, "Content")
-    if "commit" in groups:
-        output += _to_cluster(groups["commit"], "Commits")
+    if Type.COMMIT in groups:
+        output += _to_cluster(groups[Type.COMMIT], "Commits")
     if refs:
         output += "\n".join([_ref_to_graphviz(ref) for ref in refs])
 
@@ -64,10 +70,10 @@ def _ref_to_graphviz(ref: git.Ref) -> str:
 
 
 def _to_graphviz_node(git_object: gitobject.GitObject) -> str:
-    color = _COLOR[git_object.type_]
-    shape = _SHAPES[git_object.type_]
+    color = _COLOR[git_object.obj_type]
+    shape = _SHAPES[git_object.obj_type]
     return (
-        f'"{git_object.short_sha}" [label="{git_object.type_}\n{git_object.short_sha}"'
+        f'"{git_object.short_sha}" [label="{git_object.obj_type.value}\n{git_object.short_sha}"'
         f",fillcolor={color},shape={shape}];"
     )
 
