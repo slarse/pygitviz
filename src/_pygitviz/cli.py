@@ -36,6 +36,7 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="PyGitViz",
         description="Git repository visualizer for education and demonstration purposes",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "-g",
