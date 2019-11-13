@@ -1,0 +1,23 @@
+0000000000000000000000000000000000000000 6b1460f371b455f3a9512821cee6701593efe0c8 Simon Larsén <slarse@kth.se> 1558035730 +0200	commit (initial): Add license
+6b1460f371b455f3a9512821cee6701593efe0c8 865a891fbe6c394caff85d1570eefced0af61db9 Simon Larsén <slarse@kth.se> 1558035738 +0200	commit: Add .gitignore
+865a891fbe6c394caff85d1570eefced0af61db9 e6776c53e03b0f525411796c5a451cd298e088d1 Simon Larsén <slarse@kth.se> 1558037288 +0200	commit: Add initial version of PyGitViz
+e6776c53e03b0f525411796c5a451cd298e088d1 700c9554e3f2ceee97d7b1fe54e924240bc904d3 Simon Larsén <slarse@kth.se> 1558079416 +0200	commit: Fix blocking run of PDF viewer
+700c9554e3f2ceee97d7b1fe54e924240bc904d3 db053bda434b59f24c9f6c44dd4418b3b15cca69 Simon Larsén <slarse@kth.se> 1573404218 +0100	pull: Fast-forward
+db053bda434b59f24c9f6c44dd4418b3b15cca69 bbb7e63ec34d0e0b7a08926d846ac4b3b8d45cb1 Simon Larsén <slarse@kth.se> 1573405172 +0100	commit: [feat] Refactor package structure, fix #1
+bbb7e63ec34d0e0b7a08926d846ac4b3b8d45cb1 1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 Simon Larsén <slarse@kth.se> 1573416258 +0100	commit: [docs] Update install, usage and requirements sections of README
+1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 Simon Larsén <slarse@kth.se> 1573556472 +0100	checkout: moving from master to refactor
+1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 fddaa4425a8c117a2f34cc3e88f2c3d4a1bc2f84 Simon Larsén <slarse@kth.se> 1573556480 +0100	commit: Initial refactor
+fddaa4425a8c117a2f34cc3e88f2c3d4a1bc2f84 f3d3d4ff4a6df33f9e5d1f295e66cd77438e5119 Simon Larsén <slarse@kth.se> 1573558389 +0100	commit: Finish refactor
+f3d3d4ff4a6df33f9e5d1f295e66cd77438e5119 1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 Simon Larsén <slarse@kth.se> 1573558395 +0100	checkout: moving from refactor to master
+1e2b5697b9ceaea851f4ad249dd7d3b2f77018f5 b33e57d8ea3903ecb1f11902054b62a07d2567f6 Simon Larsén <slarse@kth.se> 1573558414 +0100	commit: [fact] Refactor project
+b33e57d8ea3903ecb1f11902054b62a07d2567f6 bffbd00ca6b71743e968303690cc6cbd783f1912 Simon Larsén <slarse@kth.se> 1573559736 +0100	commit: [fact] Break out GitObject into a separate module and document it
+bffbd00ca6b71743e968303690cc6cbd783f1912 156eeca006c3d21f8a81fc92aaf64ee986a4b2e2 Simon Larsén <slarse@kth.se> 1573560592 +0100	commit: [fact] Replace GitObject's type with an enum
+156eeca006c3d21f8a81fc92aaf64ee986a4b2e2 4002df0191a84400fc01232cf2f23940c12874cf Simon Larsén <slarse@kth.se> 1573563649 +0100	commit: [feat] Add --hide-content option to CLI
+4002df0191a84400fc01232cf2f23940c12874cf c319e783e95e2238187f0a60a9fd10498aa729e8 Simon Larsén <slarse@kth.se> 1573563659 +0100	commit (amend): [feat] Add --hide-content option to CLI, fix #5
+c319e783e95e2238187f0a60a9fd10498aa729e8 c319e783e95e2238187f0a60a9fd10498aa729e8 Simon Larsén <slarse@kth.se> 1573649311 +0100	checkout: moving from master to add_git_dir_arg
+c319e783e95e2238187f0a60a9fd10498aa729e8 55e7dfc76a8b2eab2784f76464310eba056586d6 Simon Larsén <slarse@kth.se> 1573649319 +0100	commit: Add git directory cli arg
+55e7dfc76a8b2eab2784f76464310eba056586d6 c319e783e95e2238187f0a60a9fd10498aa729e8 Simon Larsén <slarse@kth.se> 1573649321 +0100	checkout: moving from add_git_dir_arg to master
+c319e783e95e2238187f0a60a9fd10498aa729e8 36b3e108e25458bbde1155ee70e9e64f9eae6dd3 Simon Larsén <slarse@kth.se> 1573653980 +0100	commit: [fact] Refactor git.cat_file
+36b3e108e25458bbde1155ee70e9e64f9eae6dd3 78641b955e5cf300bc98d7bab92bc0765280c0d3 Simon Larsén <slarse@kth.se> 1573654078 +0100	commit: [feat] Add --git-directory CLI option
+78641b955e5cf300bc98d7bab92bc0765280c0d3 d07883297d69f5ec5a9868f59ac8c2f3b70c6c5d Simon Larsén <slarse@kth.se> 1573654191 +0100	commit: [feat] Add defaults to help output
+d07883297d69f5ec5a9868f59ac8c2f3b70c6c5d b05ec91f3631f270c51247a0606227a8799d8def Simon Larsén <slarse@kth.se> 1573654484 +0100	commit: [docs] Add help section output to README
