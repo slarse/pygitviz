@@ -11,6 +11,16 @@ repository layout, and then renders it with any PDF viewer that is available.
 The screencast demonstrates some basics of Git objects and branches, and uses
 the precursor to PyGitViz for visualization.
 
+PyGitViz has two primary modes. The default is to show refs, commits, HEAD,
+blobs and trees, in a view that looks like the one below.
+
+![images](images/default_mode.png)
+
+It is also possible to hide trees and blobs with the `--hide-content` option,
+which produces a view like this one instead.
+
+![images](images/hide_content.png)
+
 ## How to use
 Install the package as instructed in the [Install section](#install), and run
 PyGitViz in a terminal at the root directory of a Git project (i.e. in the same
