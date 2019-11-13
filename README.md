@@ -14,17 +14,33 @@ the precursor to PyGitViz for visualization.
 ## How to use
 Install the package as instructed in the [Install section](#install), and run
 PyGitViz in a terminal at the root directory of a Git project (i.e. in the same
-directory where you find the `.git` repository).
+directory where you find the `.git` repository). You can show the available
+command line options by running `pygitviz -h`:
 
 ```bash
 $ pygitviz -h
+usage: PyGitViz [-h] [-g GIT_DIRECTORY] [--hide-content] [-p PDF_VIEWER]
+
+Git repository visualizer for education and demonstration purposes
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -g GIT_DIRECTORY, --git-directory GIT_DIRECTORY
+                        Path to a .git directory (default: .git)
+  --hide-content        Hide trees and blobs from the representation, so only
+                        commits and refs are shown. (default: False)
+  -p PDF_VIEWER, --pdf-viewer PDF_VIEWER
+                        Program to open the resulting PDF file with. (default:
+                        xdg-open)
 ```
-for the command line options. If the command cannot be found, you probably have
-not added the `bin` directory in which the script was installed to your path.
-You should still be able to run PyGitViz explicitly as a Python module.
+
+If the command cannot be found, you probably have not added the `bin` directory
+in which the script was installed to your path.  You should still be able to
+run PyGitViz explicitly as a Python module.
 
 ```bash
 $ python3 -m pygitviz -h
+# ***OUTPUT OMITTED***
 ```
 
 If you're in a bash-like shell, add an `&` at the end of the command to put it
