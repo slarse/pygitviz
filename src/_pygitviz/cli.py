@@ -18,7 +18,7 @@ def main() -> None:
 
     pdf_name = "graph.pdf"
     dot_name = "graph.dot"
-    git_root = Path(".git")
+    git_root = args.git_directory
     with tempfile.TemporaryDirectory() as tmpdir:
         dot_file = Path(str(tmpdir)) / dot_name
         pdf_file = Path(str(tmpdir)) / pdf_name
@@ -38,6 +38,13 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
         description="Git repository visualizer for education and demonstration purposes",
     )
     parser.add_argument(
+        "-g",
+        "--git-directory",
+        help="Path to a .git directory",
+        default=Path(".git"),
+        type=Path,
+    )
+    parser.add_argument(
         "--hide-content",
         help=(
             "Hide trees and blobs from the representation, so only commits and "
@@ -48,11 +55,9 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     parser.add_argument(
         "-p",
         "--pdf-viewer",
-        help=(
-            "Program to open the resulting PDF file with. Defaults to "
-            f"'{operating_system.open_pdf_cmd}'."
-        ),
+        help="Program to open the resulting PDF file with.",
         default=operating_system.open_pdf_cmd,
+        type=str,
     )
     return parser
 
