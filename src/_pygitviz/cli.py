@@ -3,11 +3,28 @@ import time
 import tempfile
 import argparse
 import sys
+import logging
+import contextlib
 from pathlib import Path
+
+import daiquiri
 
 from _pygitviz import graphviz
 from _pygitviz import util
 from _pygitviz import git
+
+daiquiri.setup(
+    level=logging.WARNING,
+    outputs=(
+        daiquiri.output.Stream(
+            sys.stdout,
+            formatter=daiquiri.formatter.ColorFormatter(
+                fmt="%(color)s[%(levelname)s] %(message)s%(color_stop)s"
+            ),
+        ),
+    ),
+)
+LOGGER = daiquiri.getLogger(__file__)
 
 
 def main() -> None:
@@ -16,19 +33,42 @@ def main() -> None:
     parser = _create_parser(operating_system)
     args = parser.parse_args(sys.argv[1:])
 
-    pdf_name = "graph.pdf"
-    dot_name = "graph.dot"
-    git_root = args.git_directory
-    with tempfile.TemporaryDirectory() as tmpdir:
-        dot_file = Path(str(tmpdir)) / dot_name
-        pdf_file = Path(str(tmpdir)) / pdf_name
-        _mainloop(
-            git_root,
-            dot_file,
-            pdf_file,
-            args.pdf_viewer,
-            operating_system,
-            args.hide_content,
+    with _convert_error_to_log(traceback=args.traceback):
+        _validate_args(args)
+
+        pdf_name = "graph.pdf"
+        dot_name = "graph.dot"
+        git_root = args.git_directory
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dot_file = Path(str(tmpdir)) / dot_name
+            pdf_file = Path(str(tmpdir)) / pdf_name
+            _mainloop(
+                git_root,
+                dot_file,
+                pdf_file,
+                args.pdf_viewer,
+                operating_system,
+                args.hide_content,
+            )
+
+
+@contextlib.contextmanager
+def _convert_error_to_log(traceback: bool):
+    try:
+        yield
+    except Exception as exc:
+        if traceback:
+            LOGGER.exception("Critical error, traceback follows")
+        else:
+            LOGGER.error(str(exc))
+        sys.exit(1)
+
+
+def _validate_args(args: argparse.Namespace) -> None:
+    if not args.git_directory.is_dir():
+        raise ValueError(
+            f"no such directory: {args.git_directory}, please specify an "
+            "existing .git directory with `--git-directory`"
         )
 
 
@@ -49,16 +89,23 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
         "--hide-content",
         help=(
             "Hide trees and blobs from the representation, so only commits and "
-            "refs are shown."
+            "refs are shown"
         ),
         action="store_true",
     )
     parser.add_argument(
         "-p",
         "--pdf-viewer",
-        help="Program to open the resulting PDF file with.",
+        help="Program to open the resulting PDF file with",
         default=operating_system.open_pdf_cmd,
         type=str,
+    )
+    parser.add_argument(
+        "--tb",
+        "--traceback",
+        dest="traceback",
+        help="Show full traceback for critical errors",
+        action="store_true",
     )
     return parser
 
