@@ -6,20 +6,29 @@ friendly. It uses [Graphviz](https://graphviz.org/) to create a PDF of the Git
 repository layout, and then renders it with any PDF viewer that is available.
 
 ## Demo
-* [Screencast of (even earlier version of) PyGitViz](https://www.youtube.com/watch?v=_rLuz9gzDVQ)
+I shot a short screencast with a very early version of PyGitViz, which is
+available below. It both shows what the tool looks like in action, and explains
+some of the basics of Git's database objects.
 
-The screencast demonstrates some basics of Git objects and branches, and uses
-the precursor to PyGitViz for visualization.
+* [Link to screencast demo](https://www.youtube.com/watch?v=_rLuz9gzDVQ)
 
-PyGitViz has two primary modes. The default is to show refs, commits, HEAD,
-blobs and trees, in a view that looks like the one below.
+### PyGitViz default mode
+PyGitViz has two primary modes. The default is to show HEAD, refs, commits,
+blobs and trees. This is the mode demonstrated in the screencast, and is also
+shown in the image below.
 
-![images](images/default_mode.png)
+![PyGitViz default mode](images/default_mode.png)
 
+This is useful for exploring and demonstrating the internals of Git.
+
+### PyGitViz hide content mode
 It is also possible to hide trees and blobs with the `--hide-content` option,
-which produces a view like this one instead.
+which produces a view showing only HEAD, refs and commits.
 
-![images](images/hide_content.png)
+![PyGitViz hide-content mode](images/hide_content.png)
+
+This is useful for exploring and demonstrating the concept of branching,
+without being overwhelmed by details of the internals.
 
 ## How to use
 Install the package as instructed in the [Install section](#install), and run
