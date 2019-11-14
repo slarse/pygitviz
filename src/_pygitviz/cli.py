@@ -56,6 +56,9 @@ def main() -> None:
 def _convert_error_to_log(traceback: bool):
     try:
         yield
+    except KeyboardInterrupt:
+        print("Exiting ...")
+        sys.exit(0)
     except Exception as exc:
         if traceback:
             LOGGER.exception("Critical error, traceback follows")
