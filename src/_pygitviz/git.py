@@ -72,6 +72,8 @@ def state(git_root):
     """Return a hash of the current state of the .git directory. Only considers
     fsck verbose output and refs.
     """
+    if not git_root.is_dir():
+        return 0
     rc, stdout, stderr = util.captured_run(*"git fsck --full -v".split(), cwd=git_root)
     refs = "".join([ref.name + ref.value for ref in collect_refs(git_root)])
     return hash(stdout + stderr + refs)
