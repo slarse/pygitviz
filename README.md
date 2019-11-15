@@ -39,6 +39,7 @@ command line options by running `pygitviz -h`:
 ```bash
 $ pygitviz -h
 usage: PyGitViz [-h] [-g GIT_DIRECTORY] [--hide-content] [-p PDF_VIEWER]
+                [-s filepath] [--tb]
 
 Git repository visualizer for education and demonstration purposes
 
@@ -47,10 +48,15 @@ optional arguments:
   -g GIT_DIRECTORY, --git-directory GIT_DIRECTORY
                         Path to a .git directory (default: .git)
   --hide-content        Hide trees and blobs from the representation, so only
-                        commits and refs are shown. (default: False)
+                        commits and refs are shown (default: False)
   -p PDF_VIEWER, --pdf-viewer PDF_VIEWER
-                        Program to open the resulting PDF file with. (default:
+                        Program to open the resulting PDF file with (default:
                         xdg-open)
+  -s filepath, --snapshot filepath
+                        Capture a single snapshot and save it to the specified
+                        path. Supports .pdf and .png (default: None)
+  --tb, --traceback     Show full traceback for critical errors (default:
+                        False)
 ```
 
 If the command cannot be found, you probably have not added the `bin` directory
@@ -71,6 +77,18 @@ $ pygitviz &
 > **Important:** PyGitViz cannot handle pack files (that are created e.g. when
 > you have very many loose Git objects, or when you push). PyGitViz should
 > be used only with small, fresh projects.
+
+### Saving a snapshot
+By default, PyGitViz will create a PDF in a temporary directory and open it
+with a PDF viewer. When the application exits, the temporary directory is
+removed. With the `--snapshot` option, you can specify a path to save an image
+to. Currently, PNG and PDF are the only supported formats, and you choose
+the file format simply by typing out the corresponding extension.
+
+```bash
+$ pygitviz --snapshot snap.png # save as a PNG image
+$ pygitviz --snapshot snap.pdf # save as a PDF
+```
 
 ### Selecting the PDF viewer
 By default, PyGitViz will use the `xdg-open` command on Linux-based OSes,

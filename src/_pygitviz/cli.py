@@ -42,14 +42,19 @@ def main() -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             dot_file = Path(str(tmpdir)) / dot_name
             pdf_file = Path(str(tmpdir)) / pdf_name
-            _mainloop(
-                git_root,
-                dot_file,
-                pdf_file,
-                args.pdf_viewer,
-                operating_system,
-                args.hide_content,
-            )
+
+            if args.snapshot:
+                _render(dot_file, args.snapshot, git_root, args.hide_content)
+                print(f"Output saved to '{args.snapshot}'")
+            else:
+                _mainloop(
+                    git_root,
+                    dot_file,
+                    pdf_file,
+                    args.pdf_viewer,
+                    operating_system,
+                    args.hide_content,
+                )
 
 
 @contextlib.contextmanager
@@ -73,6 +78,8 @@ def _validate_args(args: argparse.Namespace) -> None:
             f"no such directory: {args.git_directory}, please specify an "
             "existing .git directory with `--git-directory`"
         )
+    if args.snapshot:
+        util.check_filetype_supported(args.snapshot)
 
 
 def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
@@ -104,6 +111,13 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
         type=str,
     )
     parser.add_argument(
+        "-s",
+        "--snapshot",
+        metavar="filepath",
+        help="Capture a single snapshot and save it to the specified path. Supports .pdf and .png",
+        type=Path,
+    )
+    parser.add_argument(
         "--tb",
         "--traceback",
         dest="traceback",
@@ -113,13 +127,11 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
     return parser
 
 
-def _create_graph_pdf(
-    dot_file: Path, pdf_file: Path, git_root: Path, hide_content: bool
-) -> None:
+def _render(dot_file: Path, output: Path, git_root: Path, hide_content: bool):
     git_objs = git.collect_objects(git_root)
     refs = git.collect_refs(git_root)
     graph = graphviz.to_graphviz(git_objs, refs, hide_content)
-    util.compile_pdf(dot_file, pdf_file, graph)
+    util.compile(dot_file, output, graph)
 
 
 def _mainloop(
@@ -134,7 +146,7 @@ def _mainloop(
     occurr in the Git repo.
     """
     state_cache = git.state(git_root)
-    _create_graph_pdf(dot_file, pdf_file, git_root, hide_content)
+    _render(dot_file, pdf_file, git_root, hide_content)
     util.view(pdf_file, pdf_viewer, operating_system.shell_setting)
 
     while True:
@@ -142,4 +154,4 @@ def _mainloop(
         state_out = git.state(git_root)
         if state_cache != state_out:
             state_cache = state_out
-            _create_graph_pdf(dot_file, pdf_file, git_root, hide_content)
+            _render(dot_file, pdf_file, git_root, hide_content)
