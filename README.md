@@ -6,9 +6,14 @@ friendly. It uses [Graphviz](https://graphviz.org/) to create a PDF of the Git
 repository layout, and then renders it with any PDF viewer that is available.
 
 ## Demo
-I shot a short screencast with a very early version of PyGitViz, which is
-available below. It both shows what the tool looks like in action, and explains
-some of the basics of Git's database objects.
+
+![PyGitViz in action](images/pygitviz_demo_600.gif)
+
+> PyGitViz in action in its default mode
+
+A longer screencast of an early version of PyGitViz is available below. It both
+shows what the tool looks like in action, and explains some of the basics of
+Git's database objects.
 
 * [Link to screencast demo](https://www.youtube.com/watch?v=_rLuz9gzDVQ)
 
