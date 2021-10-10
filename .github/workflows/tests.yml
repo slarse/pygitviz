@@ -35,7 +35,7 @@ jobs:
         pip install -e .[TEST]
     - name: Test with pytest
       run: |
-        coverage run --branch --source _pygitviz -m pytest tests
+        coverage run --branch --source _pygitviz -m pytest tests -vv
         coverage xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2.1.0
