@@ -35,7 +35,7 @@ def to_graphviz(
     groups = {
         key: list(group)
         for key, group in groupby(
-            sorted(git_objects, key=lambda o: _ORDER[o.obj_type]),
+            sorted(git_objects, key=lambda o: f"{_ORDER[o.obj_type]}{hash(o)}"),
             key=lambda o: o.obj_type,
         )
     }
