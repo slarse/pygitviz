@@ -27,8 +27,10 @@ def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     objects_root = git_root / "objects"
     if not objects_root.is_dir():
         return []
-    object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
-    object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
+    object_dirs = (
+        d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir()
+    )
+    object_shas = sorted(d.name + file.name for d in object_dirs for file in d.iterdir())
     git_objects = {
         sha: gitobject.GitObject(
             sha=sha, obj_type=Type(cat_file(sha, git_root, CatFileOption.TYPE))

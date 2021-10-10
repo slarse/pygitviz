@@ -32,10 +32,12 @@ def to_graphviz(
     if not git_objects:
         return EMPTY
 
+    # sort by sha to ensure consistent output
+    sha_sorted_git_objects = sorted(git_objects, key=lambda go: go.sha)
     groups = {
         key: list(group)
         for key, group in groupby(
-            sorted(git_objects, key=lambda o: f"{_ORDER[o.obj_type]}{hash(o)}"),
+            sorted(sha_sorted_git_objects, key=lambda o: _ORDER[o.obj_type]),
             key=lambda o: o.obj_type,
         )
     }
