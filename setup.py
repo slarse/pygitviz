@@ -13,7 +13,7 @@ with open(
     __version__ = line.split("=")[1].strip(" '\"\n")
     assert re.match(r"^\d+(\.\d+){2}$", __version__)
 
-test_requirements = ["pytest>=4.0.0", "pytest-cov>=2.6.0", "pytest-mock", "codecov"]
+test_requirements = ["pytest>=4.0.0", "coverage>=6.0.0", "pytest-mock", "codecov"]
 required = ["daiquiri"]
 
 setup(
