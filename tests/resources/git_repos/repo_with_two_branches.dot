@@ -61,10 +61,10 @@ fce48e3",fillcolor=darkslategray1,shape=rect];
 "fce48e3" -> "3ffbba6" [label=""];
 "d3499f0" -> "fce48e3" [dir=back];
 }
-"master" [shape=rect];
-"master" -> "8a7a5fd";
-"branch" [shape=rect];
-"branch" -> "8a7a5fd";
 "HEAD" [shape=rect];
 "HEAD" -> "master";
+"branch" [shape=rect];
+"branch" -> "8a7a5fd";
+"master" [shape=rect];
+"master" -> "8a7a5fd";
 }

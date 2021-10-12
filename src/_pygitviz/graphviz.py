@@ -51,7 +51,7 @@ def to_graphviz(
             groups[Type.COMMIT], "Commits", show_children=not hide_content
         )
     if refs:
-        output += "\n".join([_ref_to_graphviz(ref) for ref in refs])
+        output += "\n".join([_ref_to_graphviz(ref) for ref in sorted(refs)])
 
     return f"""digraph G {{
 nodesep=.3;
