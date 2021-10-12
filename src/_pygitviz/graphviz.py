@@ -1,4 +1,5 @@
 """Functions for converting Git objects to a Graphviz representation."""
+import pathlib
 from itertools import groupby
 from typing import List
 
@@ -16,6 +17,25 @@ _ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2}
 EMPTY = r"digraph G {}"
 
 
+def git_to_dot(git_dir: pathlib.Path, hide_content: bool = False) -> str:
+    """Produce a dot file from a Git directory.
+
+    This function is guaranteed to produce consistent output. Calling this
+    function multiple times on the same Git directory (without changing
+    its state) always produces the same output.
+
+    Args:
+        git_dir: The .git directory.
+        hide_content: If True, blobs and trees are not shown.
+
+    Returns:
+        A dot Digraph.
+    """
+    git_objs = git.collect_objects(git_dir)
+    refs = git.collect_refs(git_dir)
+    return to_graphviz(git_objs, refs, hide_content)
+
+
 def to_graphviz(
     git_objects: List[gitobject.GitObject],
     refs: List[git.Ref],
@@ -23,6 +43,9 @@ def to_graphviz(
 ) -> str:
     """Return a string with graphviz representing the provided Git objects and
     refs.
+
+    This function is guaranteed to produce consistent output. Calling this
+    function multiple times on the same input always produces the same output.
 
     Args:
         git_objects: A list of GitObjects to turn into a Graphviz Digraph.
@@ -32,10 +55,11 @@ def to_graphviz(
     if not git_objects:
         return EMPTY
 
+    sha_sorted_git_objects = sorted(git_objects, key=lambda go: go.sha)
     groups = {
         key: list(group)
         for key, group in groupby(
-            sorted(git_objects, key=lambda o: _ORDER[o.obj_type]),
+            sorted(sha_sorted_git_objects, key=lambda o: _ORDER[o.obj_type]),
             key=lambda o: o.obj_type,
         )
     }
@@ -49,7 +73,7 @@ def to_graphviz(
             groups[Type.COMMIT], "Commits", show_children=not hide_content
         )
     if refs:
-        output += "\n".join([_ref_to_graphviz(ref) for ref in refs])
+        output += "\n".join([_ref_to_graphviz(ref) for ref in sorted(refs)])
 
     return f"""digraph G {{
 nodesep=.3;

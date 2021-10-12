@@ -12,6 +12,7 @@ import daiquiri
 from _pygitviz import graphviz
 from _pygitviz import util
 from _pygitviz import git
+from _pygitviz.git_to_dot import git_to_dot
 
 daiquiri.setup(
     level=logging.WARNING,
@@ -128,9 +129,7 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
 
 
 def _render(dot_file: Path, output: Path, git_root: Path, hide_content: bool):
-    git_objs = git.collect_objects(git_root)
-    refs = git.collect_refs(git_root)
-    graph = graphviz.to_graphviz(git_objs, refs, hide_content)
+    graph = git_to_dot(git_root, hide_content)
     util.compile(dot_file, output, graph)
 
 
