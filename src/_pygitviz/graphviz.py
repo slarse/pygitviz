@@ -20,6 +20,10 @@ EMPTY = r"digraph G {}"
 def git_to_dot(git_dir: pathlib.Path, hide_content: bool = False) -> str:
     """Produce a dot file from a Git directory.
 
+    This function is guaranteed to produce consistent output. Calling this
+    function multiple times on the same Git directory (without changing
+    its state) always produces the same output.
+
     Args:
         git_dir: The .git directory.
         hide_content: If True, blobs and trees are not shown.
@@ -40,6 +44,9 @@ def to_graphviz(
     """Return a string with graphviz representing the provided Git objects and
     refs.
 
+    This function is guaranteed to produce consistent output. Calling this
+    function multiple times on the same input always produces the same output.
+
     Args:
         git_objects: A list of GitObjects to turn into a Graphviz Digraph.
         refs: A list of Git refs.
@@ -48,7 +55,6 @@ def to_graphviz(
     if not git_objects:
         return EMPTY
 
-    # sort by sha to ensure consistent output
     sha_sorted_git_objects = sorted(git_objects, key=lambda go: go.sha)
     groups = {
         key: list(group)
