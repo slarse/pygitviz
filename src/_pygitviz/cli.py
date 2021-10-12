@@ -12,7 +12,7 @@ import daiquiri
 from _pygitviz import graphviz
 from _pygitviz import util
 from _pygitviz import git
-from _pygitviz.git_to_dot import git_to_dot
+from _pygitviz.graphviz import git_to_dot
 
 daiquiri.setup(
     level=logging.WARNING,
