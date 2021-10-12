@@ -5,7 +5,7 @@ import tempfile
 
 import pytest
 
-from _pygitviz import git_to_dot
+from _pygitviz import graphviz
 
 _RepoTestCase = collections.namedtuple("_RepoTestCase", "repo_zip expected_dot_file")
 
@@ -28,6 +28,6 @@ def test_git_to_dot_creates_expected_dotfile(repo_test_case, tmp_path):
     git_dir, *_ = tmp_path.rglob(".git")
     expected_graph = repo_test_case.expected_dot_file.read_text(encoding="utf8")
 
-    actual_graph = git_to_dot.git_to_dot(git_dir)
+    actual_graph = graphviz.git_to_dot(git_dir)
 
     assert actual_graph.strip() == expected_graph.strip()

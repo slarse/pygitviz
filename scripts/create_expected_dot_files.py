@@ -5,7 +5,7 @@ import pathlib
 import tempfile
 import shutil
 
-from _pygitviz.git_to_dot import git_to_dot
+from _pygitviz.graphviz import git_to_dot
 
 TEST_GIT_REPOS_DIR = (
     pathlib.Path(__file__).parent.parent / "tests" / "resources" / "git_repos"
@@ -28,4 +28,5 @@ def main():
             print(f"Created dotfile:\n\tdotfile={dot_file.name}\n\tsource={compressed.name}")
 
 
-main()
+if __name__ == "__main__":
+    main()

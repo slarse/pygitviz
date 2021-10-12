@@ -1,4 +1,5 @@
 """Functions for converting Git objects to a Graphviz representation."""
+import pathlib
 from itertools import groupby
 from typing import List
 
@@ -14,6 +15,21 @@ _COLOR = {
 _SHAPES = {Type.BLOB: "egg", Type.TREE: "folder", Type.COMMIT: "rect"}
 _ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2}
 EMPTY = r"digraph G {}"
+
+
+def git_to_dot(git_dir: pathlib.Path, hide_content: bool = False) -> str:
+    """Produce a dot file from a Git directory.
+
+    Args:
+        git_dir: The .git directory.
+        hide_content: If True, blobs and trees are not shown.
+
+    Returns:
+        A dot Digraph.
+    """
+    git_objs = git.collect_objects(git_dir)
+    refs = git.collect_refs(git_dir)
+    return to_graphviz(git_objs, refs, hide_content)
 
 
 def to_graphviz(
