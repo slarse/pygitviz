@@ -79,7 +79,11 @@ def _collect_packed_git_objects(git_root: pathlib.Path) -> List[gitobject.GitObj
 def _unpack_pack_files_to(pack_files, target_dir):
     for pack_file in pack_files:
         proc = subprocess.Popen(
-            ["git", "unpack-objects"], stdin=subprocess.PIPE, cwd=target_dir
+            ["git", "unpack-objects"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+            cwd=target_dir,
         )
         proc.communicate(pack_file.read_bytes())
 
