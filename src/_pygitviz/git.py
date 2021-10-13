@@ -4,7 +4,9 @@ import pathlib
 import enum
 import zlib
 import itertools
-from typing import List
+import tempfile
+import subprocess
+from typing import List, Dict, Optional
 from collections import namedtuple
 
 
@@ -27,22 +29,40 @@ def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     objects_root = git_root / "objects"
     if not objects_root.is_dir():
         return []
-    object_dirs = (
-        d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir()
-    )
-    object_shas = sorted(d.name + file.name for d in object_dirs for file in d.iterdir())
+
+    object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
+    object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
     git_objects = {
         sha: gitobject.GitObject(
             sha=sha, obj_type=Type(cat_file(sha, git_root, CatFileOption.TYPE))
         )
         for sha in object_shas
     }
+
     for obj in git_objects.values():
         if obj.obj_type == Type.TREE:
             _add_children(obj, git_objects, git_root)
         elif obj.obj_type == Type.COMMIT:
             _add_parents_and_tree(obj, git_objects, git_root)
-    return git_objects.values()
+
+    pack_dir = objects_root / "pack"
+    pack_files = list(pack_dir.glob("*.pack"))
+    packed_git_objects = []
+    if pack_files:
+
+        with tempfile.TemporaryDirectory() as cache_dir:
+
+            util.captured_run("git", "init", cwd=cache_dir)
+
+            for pack_file in pack_files:
+                proc = subprocess.Popen(
+                    ["git", "unpack-objects"], stdin=subprocess.PIPE, cwd=cache_dir
+                )
+                proc.communicate(pack_file.read_bytes())
+
+            packed_git_objects = collect_objects(pathlib.Path(cache_dir) / ".git")
+
+    return list(git_objects.values()) + packed_git_objects
 
 
 def collect_refs(git_root):
