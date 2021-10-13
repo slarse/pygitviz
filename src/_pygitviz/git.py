@@ -26,43 +26,62 @@ def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     """Return all Git objects in the .git/objects directory, or an empty list
     if the directory does not exist.
     """
-    objects_root = git_root / "objects"
-    if not objects_root.is_dir():
+    if not (git_root / "objects").is_dir():
         return []
+
+    loose_git_objects = _collect_loose_git_objects(git_root)
+    packed_git_objects = _collect_packed_git_objects(git_root)
+
+    return loose_git_objects + packed_git_objects
+
+
+def _collect_loose_git_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
+    objects_root = git_root / "objects"
 
     object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
     object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
-    git_objects = {
-        sha: gitobject.GitObject(
-            sha=sha, obj_type=Type(cat_file(sha, git_root, CatFileOption.TYPE))
-        )
-        for sha in object_shas
-    }
 
+    git_objects = {sha: _create_git_object(sha, git_root) for sha in object_shas}
+    _link_related_git_objects(git_objects, git_root)
+
+    return list(git_objects.values())
+
+
+def _create_git_object(sha, git_root):
+    obj_type = Type(cat_file(sha, git_root, CatFileOption.TYPE))
+    return gitobject.GitObject(sha=sha, obj_type=obj_type)
+
+
+def _link_related_git_objects(git_objects, git_root):
     for obj in git_objects.values():
         if obj.obj_type == Type.TREE:
             _add_children(obj, git_objects, git_root)
         elif obj.obj_type == Type.COMMIT:
             _add_parents_and_tree(obj, git_objects, git_root)
 
+
+def _collect_packed_git_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
+    objects_root = git_root / "objects"
+
     pack_dir = objects_root / "pack"
     pack_files = list(pack_dir.glob("*.pack"))
-    packed_git_objects = []
-    if pack_files:
+    if not pack_files:
+        return []
 
-        with tempfile.TemporaryDirectory() as cache_dir:
+    with tempfile.TemporaryDirectory() as cache_dir:
+        util.captured_run("git", "init", cwd=cache_dir)
+        _unpack_pack_files_to(pack_files, cache_dir)
+        git_objects = _collect_loose_git_objects(pathlib.Path(cache_dir) / ".git")
 
-            util.captured_run("git", "init", cwd=cache_dir)
+    return git_objects
 
-            for pack_file in pack_files:
-                proc = subprocess.Popen(
-                    ["git", "unpack-objects"], stdin=subprocess.PIPE, cwd=cache_dir
-                )
-                proc.communicate(pack_file.read_bytes())
 
-            packed_git_objects = collect_objects(pathlib.Path(cache_dir) / ".git")
-
-    return list(git_objects.values()) + packed_git_objects
+def _unpack_pack_files_to(pack_files, target_dir):
+    for pack_file in pack_files:
+        proc = subprocess.Popen(
+            ["git", "unpack-objects"], stdin=subprocess.PIPE, cwd=target_dir
+        )
+        proc.communicate(pack_file.read_bytes())
 
 
 def collect_refs(git_root):
