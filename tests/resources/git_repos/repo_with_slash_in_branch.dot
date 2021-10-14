@@ -1,0 +1,72 @@
+digraph G {
+nodesep=.3;
+ranksep=.5;
+node [style=filled];
+rankdir=LR;
+subgraph cluster_Content {
+label="Content";
+style="rounded";
+bgcolor=beige;
+"3ffbba6" [label="tree
+3ffbba6",fillcolor=darkolivegreen1,shape=folder];
+"3ffbba6" -> "09f9a6a" [label="file.txt"];
+"4cf9f17" [label="tree
+4cf9f17",fillcolor=darkolivegreen1,shape=folder];
+"4cf9f17" -> "ce01362" [label="file.txt"];
+"9ad6fac" [label="tree
+9ad6fac",fillcolor=darkolivegreen1,shape=folder];
+"9ad6fac" -> "2227cdd" [label="file.txt"];
+"b4dc662" [label="tree
+b4dc662",fillcolor=darkolivegreen1,shape=folder];
+"b4dc662" -> "2227cdd" [label="file.txt"];
+"b4dc662" -> "fa49b07" [label="new.txt"];
+"e660ddb" [label="tree
+e660ddb",fillcolor=darkolivegreen1,shape=folder];
+"e660ddb" -> "09f9a6a" [label="file.txt"];
+"e660ddb" -> "fa49b07" [label="new.txt"];
+"09f9a6a" [label="blob
+09f9a6a",fillcolor=azure,shape=egg];
+
+"2227cdd" [label="blob
+2227cdd",fillcolor=azure,shape=egg];
+
+"ce01362" [label="blob
+ce01362",fillcolor=azure,shape=egg];
+
+"fa49b07" [label="blob
+fa49b07",fillcolor=azure,shape=egg];
+
+}
+subgraph cluster_Commits {
+label="Commits";
+style="rounded";
+bgcolor=beige;
+"8a7a5fd" [label="commit
+8a7a5fd",fillcolor=darkslategray1,shape=rect];
+"8a7a5fd" -> "e660ddb" [label=""];
+"fce48e3" -> "8a7a5fd" [dir=back];
+"a6c0e99" [label="commit
+a6c0e99",fillcolor=darkslategray1,shape=rect];
+"a6c0e99" -> "b4dc662" [label=""];
+"d3499f0" -> "a6c0e99" [dir=back];
+"ca843c0" [label="commit
+ca843c0",fillcolor=darkslategray1,shape=rect];
+"ca843c0" -> "4cf9f17" [label=""];
+"d3499f0" [label="commit
+d3499f0",fillcolor=darkslategray1,shape=rect];
+"d3499f0" -> "9ad6fac" [label=""];
+"ca843c0" -> "d3499f0" [dir=back];
+"fce48e3" [label="commit
+fce48e3",fillcolor=darkslategray1,shape=rect];
+"fce48e3" -> "3ffbba6" [label=""];
+"d3499f0" -> "fce48e3" [dir=back];
+}
+"HEAD" [shape=rect];
+"HEAD" -> "issue/1-slash-in-branch-name";
+"branch" [shape=rect];
+"branch" -> "8a7a5fd";
+"issue/1-slash-in-branch-name" [shape=rect];
+"issue/1-slash-in-branch-name" -> "8a7a5fd";
+"master" [shape=rect];
+"master" -> "8a7a5fd";
+}
