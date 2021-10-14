@@ -93,22 +93,33 @@ def collect_refs(git_root):
     nothing if there are no concrete refs.
     """
     symb_file = git_root / "HEAD"
-    ref_heads = git_root / "refs" / "heads"
-    refs = []
-    if ref_heads.exists():
-        refs += [
-            Ref(f.name, util.short_sha(f.read_text(encoding=util.ENCODING).strip()))
-            for f in ref_heads.iterdir()
-        ]
+    _, stdout, _ = util.captured_run(
+        "git",
+        "for-each-ref",
+        "refs/heads",
+        "--format",
+        r"%(refname:lstrip=2) %(objectname)",
+        cwd=git_root,
+    )
+
+    def _to_ref(line):
+        name, sha = line.strip().split()
+        return Ref(name, util.short_sha(sha))
+
+    refs = list(map(_to_ref, stdout.strip().split("\n")))
 
     if symb_file.exists() and refs:  # only add HEAD if there are concrete refs
         symb_contents = symb_file.read_text(encoding=util.ENCODING).split()
-        symb_value = (
-            symb_contents[-1].split("/")[-1]
-            if len(symb_contents) > 1
-            else util.short_sha(symb_contents[-1])
-        )
-        refs.append(Ref("HEAD", symb_value))
+
+        if len(symb_contents) > 1:
+            refname = symb_contents[-1]
+            # need to account for slashes in the branch name
+            branch_name = "/".join(refname.split("/")[2:])
+            head_value = branch_name
+        else:
+            head_value = util.short_sha(symb_contents[-1])
+
+        refs.append(Ref("HEAD", head_value))
 
     return refs
 
