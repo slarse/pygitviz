@@ -4,6 +4,7 @@ import pathlib
 import sys
 import collections
 import enum
+import tempfile
 
 ENCODING = sys.getdefaultencoding()
 
@@ -78,3 +79,10 @@ def view(pdf_file: pathlib.Path, pdf_viewer: str, shell: bool) -> None:
         stderr=subprocess.PIPE,
         shell=shell,
     )
+
+
+def atomic_write(path: pathlib.Path, content: str, **write_text_kwargs):
+    with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
+        buffer = pathlib.Path(tmpfile.name)
+        buffer.write_text(content, encoding=ENCODING, **write_text_kwargs)
+        buffer.rename(path)

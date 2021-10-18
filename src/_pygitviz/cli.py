@@ -5,6 +5,7 @@ import argparse
 import sys
 import logging
 import contextlib
+import multiprocessing as mp
 from pathlib import Path
 
 import daiquiri
@@ -13,6 +14,7 @@ from _pygitviz import graphviz
 from _pygitviz import util
 from _pygitviz import git
 from _pygitviz.graphviz import git_to_dot
+from _pygitviz.webapp import create_app
 
 daiquiri.setup(
     level=logging.WARNING,
@@ -47,6 +49,17 @@ def main() -> None:
             if args.snapshot:
                 _render(dot_file, args.snapshot, git_root, args.hide_content)
                 print(f"Output saved to '{args.snapshot}'")
+            elif args.webapi:
+                update_process = mp.Process(
+                    target=_update_loop, args=(git_root, dot_file, args.hide_content)
+                )
+                update_process.start()
+
+                try:
+                    create_app(git_root, dot_file).run(host="127.0.0.1", port="5000")
+                finally:
+                    update_process.kill()
+
             else:
                 _mainloop(
                     git_root,
@@ -111,13 +124,17 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
         default=operating_system.open_pdf_cmd,
         type=str,
     )
-    parser.add_argument(
+
+    execution_mode = parser.add_mutually_exclusive_group()
+    execution_mode.add_argument("--webapi", action="store_true")
+    execution_mode.add_argument(
         "-s",
         "--snapshot",
         metavar="filepath",
         help="Capture a single snapshot and save it to the specified path. Supports .pdf and .png",
         type=Path,
     )
+
     parser.add_argument(
         "--tb",
         "--traceback",
@@ -125,6 +142,7 @@ def _create_parser(operating_system: util.OS) -> argparse.ArgumentParser:
         help="Show full traceback for critical errors",
         action="store_true",
     )
+
     return parser
 
 
@@ -144,13 +162,28 @@ def _mainloop(
     """Create and open a PDF file that is continually refreshed as changes
     occurr in the Git repo.
     """
-    state_cache = git.state(git_root)
     _render(dot_file, pdf_file, git_root, hide_content)
     util.view(pdf_file, pdf_viewer, operating_system.shell_setting)
+
+    for _ in _yielding_update_loop(git_root, dot_file):
+        _render(dot_file, pdf_file, git_root, hide_content)
+
+
+def _yielding_update_loop(git_root, dot_file):
+    state_cache = git.state(git_root)
 
     while True:
         time.sleep(1)
         state_out = git.state(git_root)
         if state_cache != state_out:
             state_cache = state_out
-            _render(dot_file, pdf_file, git_root, hide_content)
+            yield
+
+
+def _update_loop(git_root, dot_file, hide_content):
+    graph = git_to_dot(git_root, hide_content)
+    util.atomic_write(dot_file, graph)
+
+    for _ in _yielding_update_loop(git_root, dot_file):
+        graph = git_to_dot(git_root, hide_content)
+        util.atomic_write(dot_file, graph)
