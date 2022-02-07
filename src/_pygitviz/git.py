@@ -106,7 +106,7 @@ def collect_refs(git_root):
         name, sha = line.strip().split()
         return Ref(name, util.short_sha(sha))
 
-    refs = list(map(_to_ref, stdout.strip().split("\n")))
+    refs = [_to_ref(line) for line in stdout.strip().split("\n") if line]
 
     if symb_file.exists() and refs:  # only add HEAD if there are concrete refs
         symb_contents = symb_file.read_text(encoding=util.ENCODING).split()
