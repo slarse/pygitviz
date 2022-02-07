@@ -35,6 +35,43 @@ which produces a view showing only HEAD, refs and commits.
 This is useful for exploring and demonstrating the concept of branching,
 without being overwhelmed by details of the internals.
 
+## Requirements
+PyGitViz requires the following to run.
+
+* Python 3.6 or higher
+* A PDF viewer
+    - The viewer should ideally refresh automatically when a PDF is updated, as
+      PyGitViz will render a new PDF for each change it detects in the
+      repository.
+    - For Linux, I highly recommend
+      [Evince](https://wiki.gnome.org/Apps/Evince), which refreshes
+      automatically.
+    - For macOS, the PDF Preview application that ships with the OS is used by
+      default, and it kind of works, but you need to refocus on the window by
+      hovering over it with your mouse cursor for it to refresh. For a smoother
+      experience, I recommend [Skim](https://skim-app.sourceforge.io/).
+    - For Windows, I find
+      [SumatraPDF](https://github.com/sumatrapdfreader/sumatrapdf) to work
+      well.
+* The `dot` command line tool (part of [Graphviz](https://graphviz.org/)).
+* `WSL2` additionaly requires the `wslview` command from the
+  [wslu](https://github.com/wslutilities/wslu) package. This _should_ be
+  preinstalled, but if it isn't, see their install instructions.
+    - `wslview` opens the PDF with the default PDF viewer installed on Windows.
+      Here I again recommend using something like SumatraPDF.
+
+## Install
+First install the requirements listed above. Then install PyGitViz directly
+from this repo. If you're on a Linux-distro, WSL2 or macOS, the following
+should work:
+
+```bash
+$ python3 -m pip install --user git+https://github.com/slarse/pygitviz.git
+```
+
+> **Windows note:** You may need to replace `python3` with `python`.
+
+
 ## How to use
 Install the package as instructed in the [Install section](#install), and run
 PyGitViz in a terminal at the root directory of a Git project (i.e. in the same
@@ -102,37 +139,6 @@ viewer, pass it as an argument for the `-p` option.
 
 > **Windows note:** I find it easiest to simply associate the `.pdf` file type
 > with the desired viewer, and then run with the default `start` command.
-
-## Requirements
-PyGitViz requires the following to run.
-
-* Python 3.6 or higher
-* A PDF viewer
-    - The viewer should ideally refresh automatically when a PDF is updated, as
-      PyGitViz will render a new PDF for each change it detects in the
-      repository.
-    - For Linux, I highly recommend
-      [Evince](https://wiki.gnome.org/Apps/Evince), which refreshes
-      automatically.
-    - For macOS, the PDF Preview application that ships with the OS is used by
-      default, and it kind of works, but you need to refocus on the window by
-      hovering over it with your mouse cursor for it to refresh. For a smoother
-      experience, I recommend [Skim](https://skim-app.sourceforge.io/).
-    - For Windows, I find
-      [SumatraPDF](https://github.com/sumatrapdfreader/sumatrapdf) to work
-      well.
-* The `dot` command line tool (part of [Graphviz](https://graphviz.org/)).
-
-## Install
-First install the requirements listed above. Then install PyGitViz directly
-from this repo. If you're on a Linux-distro, or macOS, the following should
-work:
-
-```bash
-$ python3 -m pip install --user git+https://github.com/slarse/pygitviz.git
-```
-
-> **Windows note:** You may need to replace `python3` with `python`.
 
 ## License
 PyGitViz is under the MIT license, please see the [LICENSE](LICENSE) file for
