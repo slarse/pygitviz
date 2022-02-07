@@ -34,6 +34,7 @@ def get_os(platform: str = sys.platform) -> OS:
         return Windows
     raise ValueError(f"unidentified operating system {platform}")
 
+
 def _is_wsl2():
     rc, stdout, _ = captured_run("uname", "-a")
     return rc == 0 and "WSL2" in stdout
