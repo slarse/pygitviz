@@ -9,6 +9,7 @@ from _pygitviz import graphviz
 
 _RepoTestCase = collections.namedtuple("_RepoTestCase", "repo_zip expected_dot_file")
 
+
 def _to_repo_test_case(repo_zip: pathlib.Path) -> _RepoTestCase:
     expected_dot_file = repo_zip.parent / f"{repo_zip.stem}.dot"
     if not expected_dot_file.is_file():
@@ -16,8 +17,11 @@ def _to_repo_test_case(repo_zip: pathlib.Path) -> _RepoTestCase:
 
     return _RepoTestCase(repo_zip, expected_dot_file)
 
+
 def _get_repo_test_cases():
-    _git_repo_zips = (pathlib.Path(__file__).parent / "resources" / "git_repos").glob("*.zip")
+    _git_repo_zips = (pathlib.Path(__file__).parent / "resources" / "git_repos").glob(
+        "*.zip"
+    )
 
     return [_to_repo_test_case(repo_zip) for repo_zip in _git_repo_zips]
 

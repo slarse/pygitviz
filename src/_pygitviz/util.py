@@ -11,6 +11,7 @@ OS = collections.namedtuple("OS", "name open_pdf_cmd shell_setting".split())
 Linux = OS(name="Linux", open_pdf_cmd="xdg-open", shell_setting=False)
 MacOS = OS(name="macOS", open_pdf_cmd="open", shell_setting=False)
 Windows = OS(name="Windows", open_pdf_cmd="start", shell_setting=True)
+WSL2 = OS(name="WSL2", open_pdf_cmd="wslview", shell_setting=False)
 
 
 class FileType(enum.Enum):
@@ -26,12 +27,17 @@ def short_sha(sha: str) -> str:
 def get_os(platform: str = sys.platform) -> OS:
     """Return defaults for the current OS."""
     if platform.startswith("linux"):
-        return Linux
+        return WSL2 if _is_wsl2() else Linux
     if platform.startswith("darwin"):
         return MacOS
     if platform.startswith("win"):
         return Windows
     raise ValueError(f"unidentified operating system {platform}")
+
+
+def _is_wsl2():
+    rc, stdout, _ = captured_run("uname", "-a")
+    return rc == 0 and "WSL2" in stdout
 
 
 def captured_run(*args, **kwargs):
@@ -73,8 +79,9 @@ def compile_pdf(dot_file, pdf_file, graphviz):
 def view(pdf_file: pathlib.Path, pdf_viewer: str, shell: bool) -> None:
     """Open a PDF file with the provided viewer program in a subprocess."""
     subprocess.Popen(
-        f"{pdf_viewer} {pdf_file}".split(),
+        [pdf_viewer, pdf_file.name],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=shell,
+        cwd=pdf_file.parent,
     )
