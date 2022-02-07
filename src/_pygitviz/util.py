@@ -26,15 +26,17 @@ def short_sha(sha: str) -> str:
 
 def get_os(platform: str = sys.platform) -> OS:
     """Return defaults for the current OS."""
-    if platform == "linux2":
-        return WSL2
     if platform.startswith("linux"):
-        return Linux
+        return WSL2 if _is_wsl2() else Linux
     if platform.startswith("darwin"):
         return MacOS
     if platform.startswith("win"):
         return Windows
     raise ValueError(f"unidentified operating system {platform}")
+
+def _is_wsl2():
+    rc, stdout, _ = captured_run("uname", "-a")
+    return rc == 0 and "WSL2" in stdout
 
 
 def captured_run(*args, **kwargs):
