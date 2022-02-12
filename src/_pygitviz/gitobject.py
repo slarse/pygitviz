@@ -75,7 +75,7 @@ class GitObject:
         return f"{self.obj_type.value}(sha={self.short_sha}{parent_str}{children_str})"
 
     def __str__(self) -> str:
-        return fr"{self.obj_type.value}\n{self.short_sha}"
+        return rf"{self.obj_type.value}\n{self.short_sha}"
 
     def __hash__(self) -> int:
         return int(self.sha, base=16)
