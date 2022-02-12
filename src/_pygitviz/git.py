@@ -6,7 +6,7 @@ import zlib
 import itertools
 import tempfile
 import subprocess
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Dict, Iterable
 from collections import namedtuple
 
 
@@ -29,22 +29,26 @@ def collect_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
     if not (git_root / "objects").is_dir():
         return []
 
-    loose_git_objects = _collect_loose_git_objects(git_root)
+    git_objects = _collect_loose_git_objects(git_root)
     packed_git_objects = _collect_packed_git_objects(git_root)
 
-    return loose_git_objects + packed_git_objects
+    git_objects.update(packed_git_objects)
+    _link_related_git_objects(git_objects, git_root)
+
+    return list(git_objects.values())
 
 
-def _collect_loose_git_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
+def _collect_loose_git_objects(
+    git_root: pathlib.Path,
+) -> Dict[str, gitobject.GitObject]:
     objects_root = git_root / "objects"
 
     object_dirs = (d for d in objects_root.iterdir() if len(d.name) == 2 and d.is_dir())
     object_shas = (d.name + file.name for d in object_dirs for file in d.iterdir())
 
     git_objects = {sha: _create_git_object(sha, git_root) for sha in object_shas}
-    _link_related_git_objects(git_objects, git_root)
 
-    return list(git_objects.values())
+    return git_objects
 
 
 def _create_git_object(sha, git_root):
@@ -60,13 +64,15 @@ def _link_related_git_objects(git_objects, git_root):
             _add_parents_and_tree(obj, git_objects, git_root)
 
 
-def _collect_packed_git_objects(git_root: pathlib.Path) -> List[gitobject.GitObject]:
+def _collect_packed_git_objects(
+    git_root: pathlib.Path,
+) -> Dict[str, gitobject.GitObject]:
     objects_root = git_root / "objects"
 
     pack_dir = objects_root / "pack"
     pack_files = list(pack_dir.glob("*.pack"))
     if not pack_files:
-        return []
+        return {}
 
     with tempfile.TemporaryDirectory() as cache_dir:
         util.captured_run("git", "init", cwd=cache_dir)
@@ -88,25 +94,16 @@ def _unpack_pack_files_to(pack_files, target_dir):
         proc.communicate(pack_file.read_bytes())
 
 
-def collect_refs(git_root):
-    """Return concrete refs and the HEAD symbolic ref. Return
-    nothing if there are no concrete refs.
+def collect_refs(git_root: pathlib.Path) -> List[Ref]:
+    """Return concrete refs, remote refs and the HEAD symbolic ref. Return
+    nothing if there are no concrete or remote refs.
     """
     symb_file = git_root / "HEAD"
-    _, stdout, _ = util.captured_run(
-        "git",
-        "for-each-ref",
-        "refs/heads",
-        "--format",
-        r"%(refname:lstrip=2) %(objectname)",
-        cwd=git_root,
-    )
-
-    def _to_ref(line):
-        name, sha = line.strip().split()
-        return Ref(name, util.short_sha(sha))
-
-    refs = [_to_ref(line) for line in stdout.strip().split("\n") if line]
+    refs = [
+        ref
+        for ref in _get_refs(git_root, refs_dir="refs")
+        if not ref.name.endswith("/HEAD")  # currently ignore remote HEAD refs
+    ]
 
     if symb_file.exists() and refs:  # only add HEAD if there are concrete refs
         symb_contents = symb_file.read_text(encoding=util.ENCODING).split()
@@ -122,6 +119,23 @@ def collect_refs(git_root):
         refs.append(Ref("HEAD", head_value))
 
     return refs
+
+
+def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
+    _, stdout, _ = util.captured_run(
+        "git",
+        "for-each-ref",
+        refs_dir,
+        "--format",
+        r"%(refname:lstrip=2) %(objectname)",
+        cwd=git_root,
+    )
+
+    def _line_to_ref(line):
+        name, sha = line.strip().split()
+        return Ref(name, util.short_sha(sha))
+
+    return (_line_to_ref(line) for line in stdout.strip().split("\n") if line)
 
 
 def state(git_root):
