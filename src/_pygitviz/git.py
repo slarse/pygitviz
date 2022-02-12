@@ -98,28 +98,18 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
     """Return concrete refs, remote refs and the HEAD symbolic ref. Return
     nothing if there are no concrete or remote refs.
     """
-    symb_file = git_root / "HEAD"
     refs = [
         ref
         for ref in _get_refs(git_root, refs_dir="refs")
         if not ref.name.endswith("/HEAD")  # currently ignore remote HEAD refs
     ]
 
-    if symb_file.exists() and refs:  # only add HEAD if there are concrete refs
-        symb_contents = symb_file.read_text(encoding=util.ENCODING).split()
-
-        if len(symb_contents) > 1:
-            refname = symb_contents[-1]
-            # need to account for slashes in the branch name
-            branch_name = "/".join(refname.split("/")[2:])
-            head_value = branch_name
-        else:
-            head_value = util.short_sha(symb_contents[-1])
-
+    head_file = git_root / "HEAD"
+    if head_file.exists() and refs:  # only add HEAD if there are concrete refs
+        head_value = _parse_head_value(head_file)
         refs.append(Ref("HEAD", head_value))
 
     return refs
-
 
 def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
     _, stdout, _ = util.captured_run(
@@ -136,6 +126,16 @@ def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
         return Ref(name, util.short_sha(sha))
 
     return (_line_to_ref(line) for line in stdout.strip().split("\n") if line)
+
+def _parse_head_value(head_file: pathlib.Path) -> str:
+    content = head_file.read_text(encoding=util.ENCODING).split()
+
+    if len(content) > 1:
+        refname = content[-1]
+        # need to account for slashes in the branch name
+        return "/".join(refname.split("/")[2:])
+    else:
+        return util.short_sha(content[-1])
 
 
 def state(git_root):
