@@ -38,7 +38,7 @@ without being overwhelmed by details of the internals.
 ## Requirements
 PyGitViz requires the following to run.
 
-* Python 3.6 or higher
+* Python 3.7 or higher
 * A PDF viewer
     - The viewer should ideally refresh automatically when a PDF is updated, as
       PyGitViz will render a new PDF for each change it detects in the
