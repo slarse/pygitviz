@@ -25,7 +25,9 @@ def main():
             dot_file = compressed.parent / f"{compressed.stem}.dot"
             dot_file.write_text(graph, encoding="utf8")
 
-            print(f"Created dotfile:\n\tdotfile={dot_file.name}\n\tsource={compressed.name}")
+            print(
+                f"Created dotfile:\n\tdotfile={dot_file.name}\n\tsource={compressed.name}"
+            )
 
 
 if __name__ == "__main__":
