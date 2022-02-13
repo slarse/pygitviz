@@ -114,7 +114,15 @@ def _gitobj_to_graphviz(
 
 
 def _ref_to_graphviz(ref: git.Ref) -> str:
-    return "\n".join([f'"{ref.name}" [shape=rect];', f'"{ref.name}" -> "{ref.value}";'])
+    ref_parts = [f'"{ref.name}" [shape=rect];', f'"{ref.name}" -> "{ref.value}";']
+
+    if ref.remote_tracking_branch:
+        ref_parts.append(
+            f'"{ref.name}" -> "{ref.remote_tracking_branch}" '
+            "[arrowhead=none,style=dashed];"
+        )
+
+    return "\n".join(ref_parts)
 
 
 def _to_graphviz_node(git_object: gitobject.GitObject) -> str:

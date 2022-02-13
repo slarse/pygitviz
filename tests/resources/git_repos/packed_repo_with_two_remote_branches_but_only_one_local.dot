@@ -57,6 +57,7 @@ fce48e3",fillcolor=darkslategray1,shape=rect];
 "HEAD" -> "master";
 "master" [shape=rect];
 "master" -> "8a7a5fd";
+"master" -> "origin/master" [arrowhead=none,style=dashed];
 "origin/branch" [shape=rect];
 "origin/branch" -> "8a7a5fd";
 "origin/master" [shape=rect];

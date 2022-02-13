@@ -1,20 +1,22 @@
 """Utility functions for interacting with Git."""
-import sys
+import dataclasses
 import pathlib
 import enum
-import zlib
-import itertools
 import tempfile
 import subprocess
 from typing import List, Dict, Optional, Dict, Iterable
-from collections import namedtuple
 
 
 from _pygitviz import util
 from _pygitviz import gitobject
 from _pygitviz.gitobject import Type
 
-Ref = namedtuple("Ref", "name value".split())
+
+@dataclasses.dataclass(frozen=True, order=True)
+class Ref:
+    name: str
+    value: str
+    remote_tracking_branch: Optional[str] = None
 
 
 class CatFileOption(enum.Enum):
@@ -94,6 +96,24 @@ def _unpack_pack_files_to(pack_files, target_dir):
         proc.communicate(pack_file.read_bytes())
 
 
+def _get_remote_tracking_branch(
+    git_root: pathlib.Path, branch_name: str
+) -> Optional[Ref]:
+    returncode, stdout, _ = util.captured_run(
+        "git",
+        "rev-parse",
+        "--abbrev-ref",
+        "--symbolic-full-name",
+        f"{branch_name}@{{upstream}}",
+        cwd=git_root,
+    )
+
+    if returncode != 0:
+        return None
+
+    return stdout.strip()
+
+
 def collect_refs(git_root: pathlib.Path) -> List[Ref]:
     """Return concrete refs, remote refs and the HEAD symbolic ref. Return
     nothing if there are no concrete or remote refs.
@@ -111,6 +131,7 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
 
     return refs
 
+
 def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
     _, stdout, _ = util.captured_run(
         "git",
@@ -123,9 +144,11 @@ def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
 
     def _line_to_ref(line):
         name, sha = line.strip().split()
-        return Ref(name, util.short_sha(sha))
+        remote_tracking_branch = _get_remote_tracking_branch(git_root, name)
+        return Ref(name, util.short_sha(sha), remote_tracking_branch)
 
     return (_line_to_ref(line) for line in stdout.strip().split("\n") if line)
+
 
 def _parse_head_value(head_file: pathlib.Path) -> str:
     content = head_file.read_text(encoding=util.ENCODING).split()
@@ -146,7 +169,19 @@ def state(git_root):
         return 0
     rc, stdout, stderr = util.captured_run(*"git fsck --full -v".split(), cwd=git_root)
     refs = "".join([ref.name + ref.value for ref in collect_refs(git_root)])
-    return hash(stdout + stderr + refs)
+    config = _get_local_config(git_root)
+    return hash(stdout + stderr + refs + config)
+
+
+def _get_local_config(git_root: pathlib.Path) -> str:
+    returncode, stdout, _ = util.captured_run(
+        "git",
+        "config",
+        "--local",
+        "--list",
+        cwd=git_root,
+    )
+    return stdout if returncode == 0 else ""
 
 
 def _is_hex(s: str) -> bool:
