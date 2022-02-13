@@ -1,0 +1,46 @@
+digraph G {
+nodesep=.3;
+ranksep=.5;
+node [style=filled];
+rankdir=LR;
+subgraph cluster_Content {
+label="Content";
+style="rounded";
+bgcolor=beige;
+"44bdb90" [label="tree
+44bdb90",fillcolor=darkolivegreen1,shape=folder];
+"44bdb90" -> "0637880" [label="file.txt"];
+"5e50ee2" [label="tree
+5e50ee2",fillcolor=darkolivegreen1,shape=folder];
+"5e50ee2" -> "9d46ef4" [label="file.txt"];
+"0637880" [label="blob
+0637880",fillcolor=azure,shape=egg];
+
+"9d46ef4" [label="blob
+9d46ef4",fillcolor=azure,shape=egg];
+
+}
+subgraph cluster_Commits {
+label="Commits";
+style="rounded";
+bgcolor=beige;
+"1335f4d" [label="commit
+1335f4d",fillcolor=darkslategray1,shape=rect];
+"1335f4d" -> "44bdb90" [label=""];
+"99baa3f" -> "1335f4d" [dir=back];
+"99baa3f" [label="commit
+99baa3f",fillcolor=darkslategray1,shape=rect];
+"99baa3f" -> "44bdb90" [label=""];
+"c8776a1" [label="commit
+c8776a1",fillcolor=darkslategray1,shape=rect];
+"c8776a1" -> "5e50ee2" [label=""];
+"99baa3f" -> "c8776a1" [dir=back];
+"1335f4d" -> "c8776a1" [dir=back];
+}
+"HEAD" [shape=rect];
+"HEAD" -> "master";
+"master" [shape=rect];
+"master" -> "99baa3f";
+"stash@{0}" [shape=rect];
+"stash@{0}" -> "c8776a1";
+}

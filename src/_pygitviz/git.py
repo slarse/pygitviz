@@ -4,6 +4,7 @@ import pathlib
 import enum
 import tempfile
 import subprocess
+import itertools
 from typing import List, Dict, Optional, Dict, Iterable
 
 
@@ -98,7 +99,7 @@ def _unpack_pack_files_to(pack_files, target_dir):
 
 def _get_remote_tracking_branch(
     git_root: pathlib.Path, branch_name: str
-) -> Optional[Ref]:
+) -> Optional[str]:
     returncode, stdout, _ = util.captured_run(
         "git",
         "rev-parse",
@@ -120,7 +121,10 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
     """
     refs = [
         ref
-        for ref in _get_refs(git_root, refs_dir="refs")
+        for ref in itertools.chain(
+            _get_refs(git_root, refs_dir="refs/heads"),
+            _get_refs(git_root, refs_dir="refs/remotes"),
+        )
         if not ref.name.endswith("/HEAD")  # currently ignore remote HEAD refs
     ]
 
@@ -129,10 +133,24 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
         head_value = _parse_head_value(head_file)
         refs.append(Ref("HEAD", head_value))
 
+    stash_refs = list(_get_raw_refs(git_root, refs_dir="refs/stash"))
+    if stash_refs:
+        stash_top, *_ = stash_refs
+        refs.append(Ref(r"stash@{0}", util.short_sha(stash_top.strip())))
+
     return refs
 
 
 def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
+
+    def _line_to_ref(line):
+        name, sha = line.strip().split()
+        remote_tracking_branch = _get_remote_tracking_branch(git_root, name)
+        return Ref(name, util.short_sha(sha), remote_tracking_branch)
+
+    return (_line_to_ref(line) for line in _get_raw_refs(git_root, refs_dir))
+
+def _get_raw_refs(git_root, refs_dir) -> Iterable[str]:
     _, stdout, _ = util.captured_run(
         "git",
         "for-each-ref",
@@ -141,14 +159,7 @@ def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
         r"%(refname:lstrip=2) %(objectname)",
         cwd=git_root,
     )
-
-    def _line_to_ref(line):
-        name, sha = line.strip().split()
-        remote_tracking_branch = _get_remote_tracking_branch(git_root, name)
-        return Ref(name, util.short_sha(sha), remote_tracking_branch)
-
-    return (_line_to_ref(line) for line in stdout.strip().split("\n") if line)
-
+    return (line for line in stdout.strip().split("\n") if line)
 
 def _parse_head_value(head_file: pathlib.Path) -> str:
     content = head_file.read_text(encoding=util.ENCODING).split()
