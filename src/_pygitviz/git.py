@@ -114,21 +114,6 @@ def _get_remote_tracking_branch(
     return stdout.strip()
 
 
-def _get_merge_branch(git_root: pathlib.Path, ref: Ref) -> Optional[str]:
-    returncode, stdout, _ = util.captured_run(
-        "git",
-        "config",
-        "--local",
-        f"branch.{ref.name}.merge",
-        cwd=git_root,
-    )
-
-    if returncode != 0 or "refs/heads/" not in stdout:
-        return None
-
-    return stdout.strip()[len("refs/heads/") :]
-
-
 def collect_refs(git_root: pathlib.Path) -> List[Ref]:
     """Return concrete refs, remote refs and the HEAD symbolic ref. Return
     nothing if there are no concrete or remote refs.
