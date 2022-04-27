@@ -35,3 +35,10 @@ def test_git_to_dot_creates_expected_dotfile(repo_test_case, tmp_path):
     actual_graph = graphviz.git_to_dot(git_dir)
 
     assert actual_graph.strip() == expected_graph.strip()
+
+def test_git_to_dot_produces_empty_graph_for_non_existing_git_dir(tmp_path):
+    non_existing_dir = tmp_path / ".git"
+
+    graph = graphviz.git_to_dot(non_existing_dir)
+
+    assert graph == 'digraph G {}'

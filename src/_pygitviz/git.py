@@ -119,6 +119,9 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
     """Return concrete refs, remote refs and the HEAD symbolic ref. Return
     nothing if there are no concrete or remote refs.
     """
+    if not git_root.is_dir():
+        return []
+
     refs = [
         ref
         for ref in itertools.chain(
