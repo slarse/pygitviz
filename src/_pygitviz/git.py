@@ -127,6 +127,7 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
         for ref in itertools.chain(
             _get_refs(git_root, refs_dir="refs/heads"),
             _get_refs(git_root, refs_dir="refs/remotes"),
+            _get_refs(git_root, refs_dir="refs/tags"),
         )
         if not ref.name.endswith("/HEAD")  # currently ignore remote HEAD refs
     ]
