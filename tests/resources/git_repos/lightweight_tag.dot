@@ -1,0 +1,31 @@
+digraph G {
+nodesep=.3;
+ranksep=.5;
+node [style=filled];
+rankdir=LR;
+subgraph cluster_Content {
+label="Content";
+style="rounded";
+bgcolor=beige;
+"4cf9f17" [label="tree
+4cf9f17",fillcolor=darkolivegreen1,shape=folder];
+"4cf9f17" -> "ce01362" [label="file.txt"];
+"ce01362" [label="blob
+ce01362",fillcolor=azure,shape=egg];
+
+}
+subgraph cluster_Commits {
+label="Commits";
+style="rounded";
+bgcolor=beige;
+"d7154d8" [label="commit
+d7154d8",fillcolor=darkslategray1,shape=rect];
+"d7154d8" -> "4cf9f17" [label=""];
+}
+"HEAD" [shape=rect];
+"HEAD" -> "main";
+"main" [shape=rect];
+"main" -> "d7154d8";
+"v1.0.0" [shape=rect];
+"v1.0.0" -> "d7154d8";
+}
