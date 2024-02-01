@@ -12,8 +12,8 @@ _COLOR = {
     Type.TREE: "darkolivegreen1",
     Type.COMMIT: "darkslategray1",
 }
-_SHAPES = {Type.BLOB: "egg", Type.TREE: "folder", Type.COMMIT: "rect"}
-_ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2}
+_SHAPES = {Type.BLOB: "egg", Type.TREE: "folder", Type.COMMIT: "rect", Type.TAG: "rect"}
+_ORDER = {Type.BLOB: 0, Type.TREE: 1, Type.COMMIT: 2, Type.TAG: 3}
 EMPTY = r"digraph G {}"
 
 
@@ -32,7 +32,8 @@ def git_to_dot(git_dir: pathlib.Path, hide_content: bool = False) -> str:
         A dot Digraph.
     """
     git_objs = git.collect_objects(git_dir)
-    refs = git.collect_refs(git_dir)
+    annotated_tags = [obj for obj in git_objs if obj.obj_type == Type.TAG]
+    refs = git.collect_refs(git_dir, annotated_tags)
     return to_graphviz(git_objs, refs, hide_content)
 
 

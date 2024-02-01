@@ -1,0 +1,43 @@
+digraph G {
+nodesep=.3;
+ranksep=.5;
+node [style=filled];
+rankdir=LR;
+subgraph cluster_Content {
+label="Content";
+style="rounded";
+bgcolor=beige;
+"50e3122" [label="tree
+50e3122",fillcolor=darkolivegreen1,shape=folder];
+"50e3122" -> "c7c7da3" [label="README.md"];
+"853694a" [label="tree
+853694a",fillcolor=darkolivegreen1,shape=folder];
+"853694a" -> "ce01362" [label="README.md"];
+"c7c7da3" [label="blob
+c7c7da3",fillcolor=azure,shape=egg];
+
+"ce01362" [label="blob
+ce01362",fillcolor=azure,shape=egg];
+
+}
+subgraph cluster_Commits {
+label="Commits";
+style="rounded";
+bgcolor=beige;
+"3cf5435" [label="commit
+3cf5435",fillcolor=darkslategray1,shape=rect];
+"3cf5435" -> "853694a" [label=""];
+"6a2f858" [label="commit
+6a2f858",fillcolor=darkslategray1,shape=rect];
+"6a2f858" -> "50e3122" [label=""];
+"3cf5435" -> "6a2f858" [dir=back];
+}
+"HEAD" [shape=rect];
+"HEAD" -> "main";
+"main" [shape=rect];
+"main" -> "6a2f858";
+"v1" [shape=rect];
+"v1" -> "3cf5435";
+"v2" [shape=rect];
+"v2" -> "6a2f858";
+}
