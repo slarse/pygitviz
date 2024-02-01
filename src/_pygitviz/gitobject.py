@@ -19,6 +19,7 @@ class Type(enum.Enum):
     BLOB = "blob"
     TREE = "tree"
     COMMIT = "commit"
+    TAG = "tag"
 
 
 class GitObject:

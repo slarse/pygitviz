@@ -10,7 +10,7 @@ from typing import List, Dict, Optional, Dict, Iterable
 
 from _pygitviz import util
 from _pygitviz import gitobject
-from _pygitviz.gitobject import Type
+from _pygitviz.gitobject import Type, GitObject
 
 
 @dataclasses.dataclass(frozen=True, order=True)
@@ -115,15 +115,29 @@ def _get_remote_tracking_branch(
     return stdout.strip()
 
 
-def collect_refs(git_root: pathlib.Path) -> List[Ref]:
+def collect_refs(
+    git_root: pathlib.Path, annotated_tags: Optional[List[GitObject]] = None
+) -> List[Ref]:
     """Return concrete refs, remote refs and the HEAD symbolic ref. Return
     nothing if there are no concrete or remote refs.
     """
+    annotated_tags = annotated_tags or []
     if not git_root.is_dir():
         return []
 
+    short_sha_to_annotated_tag = {tag.short_sha: tag for tag in annotated_tags}
+
+    def resolve_tag_ref(ref: Ref) -> Ref:
+        if ref.value not in short_sha_to_annotated_tag:
+            return ref
+
+        tag_sha = _parse_annotated_tag_sha(
+            short_sha_to_annotated_tag[ref.value], git_root
+        )
+        return Ref(ref.name, tag_sha)
+
     refs = [
-        ref
+        resolve_tag_ref(ref)
         for ref in itertools.chain(
             _get_refs(git_root, refs_dir="refs/heads"),
             _get_refs(git_root, refs_dir="refs/remotes"),
@@ -146,13 +160,13 @@ def collect_refs(git_root: pathlib.Path) -> List[Ref]:
 
 
 def _get_refs(git_root, refs_dir) -> Iterable[Ref]:
-
     def _line_to_ref(line):
         name, sha = line.strip().split()
         remote_tracking_branch = _get_remote_tracking_branch(git_root, name)
         return Ref(name, util.short_sha(sha), remote_tracking_branch)
 
     return (_line_to_ref(line) for line in _get_raw_refs(git_root, refs_dir))
+
 
 def _get_raw_refs(git_root, refs_dir) -> Iterable[str]:
     _, stdout, _ = util.captured_run(
@@ -164,6 +178,7 @@ def _get_raw_refs(git_root, refs_dir) -> Iterable[str]:
         cwd=git_root,
     )
     return (line for line in stdout.strip().split("\n") if line)
+
 
 def _parse_head_value(head_file: pathlib.Path) -> str:
     content = head_file.read_text(encoding=util.ENCODING).split()
@@ -182,7 +197,7 @@ def state(git_root):
     """
     if not git_root.is_dir():
         return 0
-    rc, stdout, stderr = util.captured_run(*"git fsck --full -v".split(), cwd=git_root)
+    _, stdout, stderr = util.captured_run(*"git fsck --full -v".split(), cwd=git_root)
     refs = "".join([ref.name + ref.value for ref in collect_refs(git_root)])
     config = _get_local_config(git_root)
     return hash(stdout + stderr + refs + config)
@@ -241,3 +256,10 @@ def _add_children(tree, git_objects, git_root):
         *_, sha, name = line.strip().split()
         child = git_objects[sha]
         tree.add_child(name, child)
+
+
+def _parse_annotated_tag_sha(tag: GitObject, git_root: pathlib.Path) -> str:
+    """Return a Ref object from the provided annotated tag."""
+    tag_content = cat_file(tag.sha, git_root, CatFileOption.PRETTY)
+    tag_sha = tag_content.split("\n")[0].strip().split()[1]
+    return util.short_sha(tag_sha)

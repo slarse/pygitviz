@@ -9,7 +9,6 @@ from pathlib import Path
 
 import daiquiri
 
-from _pygitviz import graphviz
 from _pygitviz import util
 from _pygitviz import git
 from _pygitviz.graphviz import git_to_dot
